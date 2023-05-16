@@ -6,12 +6,16 @@ namespace Vizprog_RGR.Views
 {
     public partial class MainWindow : Window
     {
+        readonly MainWindowViewModel MWVM;
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel();
+            MWVM = new MainWindowViewModel();
+            DataContext = MWVM;
+            MWVM.AddWindow(this);
         }
 
+        public void Update() => MWVM.Update();
     }
 
 }
