@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Vizprog_RGR.ViewModels;
 
 namespace Vizprog_RGR.Views
 {
@@ -7,6 +9,9 @@ namespace Vizprog_RGR.Views
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainWindowViewModel();
         }
+
     }
+
 }
