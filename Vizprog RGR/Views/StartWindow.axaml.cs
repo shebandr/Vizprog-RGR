@@ -4,13 +4,16 @@ using Vizprog_RGR.ViewModels;
 
     public partial class StartWindow : Window
     {
-        readonly StartWindowViewModel SWVM;
-        public StartWindow()
-        {
+    readonly StartWindowViewModel lwvm;
+        public StartWindow() {
             InitializeComponent();
-            SWVM = new StartWindowViewModel();
-            DataContext = SWVM;
-            SWVM.AddWindow(this);
+            lwvm = new StartWindowViewModel();
+            DataContext = lwvm;
+            lwvm.AddWindow(this);
+        }
+
+        public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+            lwvm.DTapped(sender, e);
         }
     }
 
