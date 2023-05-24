@@ -8,8 +8,9 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
+    <Folder Include="Models\" />
+    <Folder Include="Views\Elements\" />
     <None Remove=".gitignore" />
   </ItemGroup>
   <ItemGroup>
