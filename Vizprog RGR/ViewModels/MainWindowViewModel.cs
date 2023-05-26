@@ -4,7 +4,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Vizprog_RGR.Models;
 using Vizprog_RGR.Views;
-using Vizprog_RGR.Views.Shapes;
+using Vizprog_RGR.Views.Elements;
 using Vizprog_RGR.ViewModels;
 using ReactiveUI;
 using System;
@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reactive;
 using System.Text;
+using Avalonia.Rendering.SceneGraph;
 
 
 namespace Vizprog_RGR.ViewModels
@@ -23,15 +24,16 @@ namespace Vizprog_RGR.ViewModels
         static bool first = true;
 
         static readonly bool use_file = false;
-        public static MainWindowViewModel? MWVM { private get; set; }
+
+        public static MainWindowViewModel? Mwvm { private get; set; }
         public static void Write(string message, bool without_update = false)
         {
             if (!without_update)
             {
                 foreach (var mess in message.Split('\n')) logs.Add(mess);
-                while (logs.Count > 50) logs.RemoveAt(0);
+                while (logs.Count > 45) logs.RemoveAt(0);
 
-                if (MWVM != null) MWVM.Logg = string.Join('\n', logs);
+                if (Mwvm != null) Mwvm.Logg = string.Join('\n', logs);
             }
 
             if (use_file)
@@ -42,39 +44,33 @@ namespace Vizprog_RGR.ViewModels
             }
         }
     }
-    public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
+
+    public class MainWindowViewModel : ViewModelBase
     {
         private string log = "";
-        public string Logg
-        {
-            get => log; set
-            {
-                if (log == value) return;
-                log = value;
-                PropertyChanged?.Invoke(this, new(nameof(Logg)));
-            }
-        }
+        public string Logg { get => log; set => this.RaiseAndSetIfChanged(ref log, value); }
 
         public MainWindowViewModel()
         {
-            Log.MWVM = this;
+            Log.Mwvm = this;
             Comm = ReactiveCommand.Create<string, Unit>(n => { FuncComm(n); return new Unit(); });
+            NewItem = ReactiveCommand.Create<Unit, Unit>(_ => { FuncNewItem(); return new Unit(); });
         }
 
         private Window? mw;
-        private Canvas? canv;
         public void AddWindow(Window window)
         {
             var canv = window.Find<Canvas>("Canvas");
 
             mw = window;
-            this.canv = canv;
-            if (canv == null) return; // Такого не бывает
+            map.canv = canv;
+            if (canv == null) return;
 
             canv.Children.Add(map.Marker);
+            canv.Children.Add(map.Marker2);
 
             var panel = (Panel?)canv.Parent;
-            if (panel == null) return; // Такого не бывает
+            if (panel == null) return;
 
             panel.PointerPressed += (object? sender, PointerPressedEventArgs e) => {
                 if (e.Source != null && e.Source is Control @control) map.Press(@control, e.GetCurrentPoint(canv).Position);
@@ -93,39 +89,31 @@ namespace Vizprog_RGR.ViewModels
                         if (canv == null) return;
 
                         var newy = map.GenSelectedItem();
-                        var size = newy.GetSize() / 2;
-                        newy.Move(pos - new Point(size.Width, size.Height));
-                        canv.Children.Add(newy.GetSelf());
+                        newy.Move(pos);
                         map.AddItem(newy);
-                    }
-
-                    if (map.new_join != null)
-                    {
-                        canv.Children.Add(map.new_join);
-                        map.new_join = null;
                     }
                 }
             };
             panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) => {
-                if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y);
+                if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y, e.GetCurrentPoint(canv).Position);
+            };
+            mw.KeyDown += (object? sender, KeyEventArgs e) => {
+                if (e.Source != null && e.Source is Control @control) map.KeyPressed(@control, e.Key);
             };
         }
 
         public static IGate[] ItemTypes { get => map.item_types; }
         public static int SelectedItem { get => map.SelectedItem; set => map.SelectedItem = value; }
 
-        /*
-         * Обработка той самой панели со схемами проекта
-         */
 
-        Border? cur_border;
+        Grid? cur_grid;
         TextBlock? old_b_child;
         object? old_b_child_tag;
         string? prev_scheme_name;
 
-        public static string ProjName { get => current_proj == null ? "???" : current_proj.Name; }
+        public static string ProjName { get => CurrentProj == null ? "???" : CurrentProj.Name; }
 
-        public static List<Scheme> Schemes { get => current_proj == null ? new() : current_proj.schemes; }
+        public static ObservableCollection<Scheme> Schemes { get => CurrentProj == null ? new() : CurrentProj.schemes; }
 
 
 
@@ -134,75 +122,105 @@ namespace Vizprog_RGR.ViewModels
             var src = (Control?)e.Source;
 
             if (src is ContentPresenter cp && cp.Child is Border bord) src = bord;
-            if (src is Border bord2 && bord2.Child is TextBlock tb2) src = tb2;
+            if (src is Border bord2 && bord2.Child is Grid g2) src = g2;
+            if (src is Grid g3 && g3.Children[0] is TextBlock tb2) src = tb2;
 
             if (src is not TextBlock tb) return;
 
             var p = tb.Parent;
-            if (p == null || p is not Border b) return;
+            if (p == null) return;
 
-            if (cur_border != null && old_b_child != null) cur_border.Child = old_b_child;
-            cur_border = b;
+            if (old_b_child != null)
+                if (cur_grid != null) cur_grid.Children[0] = old_b_child;
+
+            if (p is not Grid g) return;
+            cur_grid = g;
+
             old_b_child = tb;
             old_b_child_tag = tb.Tag;
             prev_scheme_name = tb.Text;
 
             var newy = new TextBox { Text = tb.Text };
 
-            b.Child = newy;
+
+            cur_grid.Children[0] = newy;
+
 
             newy.KeyUp += (object? sender, KeyEventArgs e) => {
                 if (e.Key != Key.Return) return;
 
                 if (newy.Text != prev_scheme_name)
                 {
-                    if ((string?)tb.Tag == "p_name") current_proj?.ChangeName(newy.Text);
+                    if ((string?)tb.Tag == "p_name") CurrentProj?.ChangeName(newy.Text);
                     else if (old_b_child_tag is Scheme scheme) scheme.ChangeName(newy.Text);
                 }
 
-                b.Child = tb;
-                cur_border = null; old_b_child = null;
+                cur_grid.Children[0] = tb;
+                cur_grid = null; old_b_child = null;
             };
         }
 
-#pragma warning disable CS0108
-        public event PropertyChangedEventHandler? PropertyChanged;
-#pragma warning restore CS0108
         public void Update()
         {
-            Log.Write("Текущий проект:\n" + current_proj);
+            Log.Write("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n    Текущий проект:\n" + CurrentProj);
 
-            if (current_scheme == null || canv == null) throw new Exception("Такого не бывает");
-            map.ImportScheme(current_scheme, canv);
+            map.ImportScheme();
 
-            PropertyChanged?.Invoke(this, new(nameof(ProjName)));
-            PropertyChanged?.Invoke(this, new(nameof(Schemes)));
+            this.RaisePropertyChanged(new(nameof(ProjName)));
+            this.RaisePropertyChanged(new(nameof(Schemes)));
+            this.RaisePropertyChanged(new(nameof(CanSave)));
+            if (mw != null) mw.Width++;
         }
 
-        /*
-         * Кнопочки!
-         */
+        public static bool CanSave { get => CurrentProj != null && CurrentProj.CanSave(); }
 
         public void FuncComm(string Comm)
         {
-            Log.Write("Comm: " + Comm);
             switch (Comm)
             {
                 case "Create":
+                    var newy = map.filer.CreateProject();
+                    CurrentProj = newy;
+                    Update();
                     break;
                 case "Open":
-                    new LauncherWindow().Show();
-                    mw?.Hide();
+                    if (mw == null) break;
+                    var selected = map.filer.SelectProjectFile(mw);
+                    if (selected != null)
+                    {
+                        CurrentProj = selected;
+                        Update();
+                    }
                     break;
                 case "Save":
-                    if (current_scheme != null) map.Export(current_scheme);
+                    map.Export();
+
+                    File.WriteAllText("../../../for_test.json", Utils.Obj2json((map.current_scheme ?? throw new System.Exception("Чё?!")).Export()));
+                    break;
+                case "SaveAs":
+                    map.Export();
+                    if (mw != null) CurrentProj?.SaveAs(mw);
+                    this.RaisePropertyChanged(new(nameof(CanSave)));
+                    break;
+                case "ExitToLauncher":
+                    new StartWindow().Show();
+                    mw?.Hide();
                     break;
                 case "Exit":
                     mw?.Close();
                     break;
             }
         }
-    
+
         public ReactiveCommand<string, Unit> Comm { get; }
+
+        private static void FuncNewItem()
+        {
+            CurrentProj?.AddScheme(null);
+        }
+
+        public ReactiveCommand<Unit, Unit> NewItem { get; }
+
+        public static bool LockSelfConnect { get => map.lock_self_connect; set => map.lock_self_connect = value; }
     }
 }
