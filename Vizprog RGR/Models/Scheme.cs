@@ -1,10 +1,10 @@
-﻿using LogicSimulator.ViewModels;
+﻿using Vizprog_RGR.ViewModels;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Reactive;
 
-namespace LogicSimulator.Models {
+namespace Vizprog_RGR.Models {
     public class Scheme : ReactiveObject {
         public string Name { get; set; }
         public long Created;

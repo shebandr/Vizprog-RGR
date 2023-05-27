@@ -1,12 +1,12 @@
 using Avalonia.Controls;
-using LogicSimulator.ViewModels;
+using Vizprog_RGR.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 
-namespace LogicSimulator.Models {
+namespace Vizprog_RGR.Models {
     public class FileHandler {
         readonly string AppData;
         readonly List<Project> projects = new();
@@ -15,7 +15,7 @@ namespace LogicSimulator.Models {
 
         public FileHandler() {
             string app_data = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            app_data = Path.Combine(app_data, "LogicSimulator");
+            app_data = Path.Combine(app_data, "Vizprog_RGR");
             if (!Directory.Exists(app_data)) Directory.CreateDirectory(app_data);
             AppData = app_data;
             LoadProjectList();

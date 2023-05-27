@@ -1,12 +1,12 @@
-﻿using LogicSimulator.ViewModels;
-using LogicSimulator.Views.Shapes;
+﻿using Vizprog_RGR.ViewModels;
+using Vizprog_RGR.Views.Shapes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LogicSimulator.Models {
+namespace Vizprog_RGR.Models {
     public class Meta {
         public IGate? item;
         public int[] ins;

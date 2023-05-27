@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace LogicSimulator.Models {
+namespace Vizprog_RGR.Models {
     public class Project: IComparable {
         public string Name { get; private set; }
         public long Created;

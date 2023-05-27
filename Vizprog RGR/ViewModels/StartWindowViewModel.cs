@@ -1,14 +1,9 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using ReactiveUI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive;
-using System.Text;
-using System.Threading.Tasks;
 using Vizprog_RGR.Views;
-using Vizprog_RGR.ViewModels;
+using Vizprog_RGR.Models;
 
 namespace Vizprog_RGR.ViewModels
 { 

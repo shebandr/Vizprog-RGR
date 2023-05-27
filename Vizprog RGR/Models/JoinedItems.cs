@@ -2,7 +2,7 @@
 using Avalonia.Media;
 using System.Collections.Generic;
 
-namespace LogicSimulator.Models {
+namespace Vizprog_RGR.Models {
     public class JoinedItems {
         public static readonly Dictionary<Line, JoinedItems> arrow_to_join = new();
 

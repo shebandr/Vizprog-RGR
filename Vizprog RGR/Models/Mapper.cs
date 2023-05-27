@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia;
-using LogicSimulator.ViewModels;
-using LogicSimulator.Views.Shapes;
+using Vizprog_RGR.ViewModels;
+using Vizprog_RGR.Views.Shapes;
 using System;
 using System.Collections.Generic;
 using DynamicData;
@@ -9,10 +9,10 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.LogicalTree;
 using System.Linq;
-using Button = LogicSimulator.Views.Shapes.Button;
+using Button = Vizprog_RGR.Views.Shapes.Button;
 using Avalonia.Input;
-
-namespace LogicSimulator.Models {
+    
+namespace Vizprog_RGR.Models {
     public class Mapper {
         readonly Line marker = new() { Tag = "Marker", ZIndex = 2, IsVisible = false, Stroke = Brushes.YellowGreen, StrokeThickness = 3 };
         readonly Rectangle marker2 = new() { Tag = "Marker", Classes = new("anim"), ZIndex = 2, IsVisible = false, Stroke = Brushes.MediumAquamarine, StrokeThickness = 3 };
@@ -23,9 +23,6 @@ namespace LogicSimulator.Models {
         public readonly Simulator sim = new(); 
         public Canvas canv = new();
 
-        /*
-         * Маркер
-         */
 
         private IGate? marked_item;
         private JoinedItems? marked_line;
@@ -51,9 +48,6 @@ namespace LogicSimulator.Models {
             }
         }
 
-        /*
-         * Выборка элементов
-         */
 
         private int selected_item = 0;
         public int SelectedItem { get => selected_item; set => selected_item = value; }
@@ -64,15 +58,10 @@ namespace LogicSimulator.Models {
                 1 => new OR_2(),
                 2 => new NOT(),
                 3 => new XOR_2(),
-                4 => new SuM(),
-                5 => new Switch(),
                 6 => new Button(),
                 7 => new LightBulb(),
                 8 => new NAND_2(),
-                9 => new FlipFlop(),
-                10 => new OR_8(),
-                11 => new AND_8(),
-                _ => new AND_2(),
+                9 => new AND_2(),
             };
         }
 
@@ -80,12 +69,8 @@ namespace LogicSimulator.Models {
 
         public IGate GenSelectedItem() => CreateItem(selected_item);
 
-        /*
-         * Хранилище
-         */
 
         readonly List<IGate> items = new();
-        // Canvas? itemer;
         private void AddToMap(IControl item) {
 
             canv.Children.Add(item);
@@ -121,23 +106,9 @@ namespace LogicSimulator.Models {
             foreach (var item in items) item.SavePose();
         }
 
-        /*
-         * Определение режима перемещения
-         */
+
 
         int mode = 0;
-        /*
-         *    Режимы:
-         * 0 - ничего не делает
-         * 1 - двигаем камеру
-         * 2 - двигаем элемент
-         * 3 - тянем элемент
-         * 4 - вышвыриваем элемент
-         * 5 - тянем линию от входа (In)
-         * 6 - тянем линию от выхода (Out)
-         * 7 - тянем линию от узла (IO)
-         * 8 - тянем уже существующее соединение - переподключаем
-        */
 
         private static int CalcMode(string? tag) {
             if (tag == null) return 0;
@@ -174,9 +145,6 @@ namespace LogicSimulator.Models {
             return null;
         }
 
-        /*
-         * Обработка мыши
-         */
 
         Point moved_pos;
         IGate? moved_item;

@@ -7,7 +7,7 @@ using Avalonia.Media.Imaging;
 using Avalonia;
 using Avalonia.Media;
 using System.Text.Json;
-using LogicSimulator.ViewModels;
+using Vizprog_RGR.ViewModels;
 using System.Collections;
 using System.Diagnostics;
 using System;
@@ -15,7 +15,7 @@ using Avalonia.Controls.Shapes;
 
 using System.Data.SQLite;
 using System.Data;
-namespace LogicSimulator.Models {
+namespace Vizprog_RGR.Models {
     public static class Utils {
 
         /*
@@ -264,16 +264,16 @@ namespace LogicSimulator.Models {
                     sb.Append(": ");
                     sb.Append(ToJSONHandler(attr.Value));
                 }
-                foreach (var el in xml.Elements()) {
+                foreach (var el in xml.Shapes()) {
                     if (sb.Length > 1) sb.Append(", ");
                     sb.Append(ToJSONHandler(el.Name.LocalName));
                     sb.Append(": ");
-                    sb.Append(ToJSONHandler(el.Elements().ToArray()[0]));
+                    sb.Append(ToJSONHandler(el.Shapes().ToArray()[0]));
                 }
                 sb.Append('}');
             } else if (name == "List") {
                 var attrs = xml.Attributes().ToArray();
-                var els = xml.Elements().ToArray();
+                var els = xml.Shapes().ToArray();
                 int count = attrs.Length + els.Length;
                 var res = new string[count];
                 var used = new bool[count];

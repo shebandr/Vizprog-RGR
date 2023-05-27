@@ -1,18 +1,14 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Vizprog_RGR.Models;
 using Vizprog_RGR.Views;
-using Vizprog_RGR.Views.Elements;
-using Vizprog_RGR.ViewModels;
+using Vizprog_RGR.Views.Shapes;
 using ReactiveUI;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Reactive;
-using System.Text;
-using Avalonia.Rendering.SceneGraph;
 
 
 namespace Vizprog_RGR.ViewModels
