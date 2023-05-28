@@ -2,30 +2,34 @@
 using Avalonia.Controls.Presenters;
 using ReactiveUI;
 using System.Reactive;
-using Vizprog_RGR.Views;
 using Vizprog_RGR.Models;
+using Vizprog_RGR.Views;
 
 namespace Vizprog_RGR.ViewModels
-{ 
+{
     public class StartWindowViewModel : ViewModelBase
     {
         Window? me;
-        private static readonly MainWindow mw = new();
+
+        private static readonly MainWindow MV = new() ;
 
         public StartWindowViewModel()
         {
-            Create = ReactiveCommand.Create<Unit, Unit>(_ => { FuncCreate(); return new Unit(); });
-            Open = ReactiveCommand.Create<Unit, Unit>(_ => { FuncOpen(); return new Unit(); });
-            Exit = ReactiveCommand.Create<Unit, Unit>(_ => { FuncExit(); return new Unit(); });
+            CreateW = ReactiveCommand.Create<Unit, Unit>(_ => { FuncCreate(); return new Unit(); });
+            OpenW = ReactiveCommand.Create<Unit, Unit>(_ => { FuncOpen(); return new Unit(); });
+            ExitW = ReactiveCommand.Create<Unit, Unit>(_ => { FuncExit(); return new Unit(); });
         }
         public void AddWindow(Window lw) => me = lw;
 
         void FuncCreate()
         {
+
             var newy = map.filer.CreateProject();
             CurrentProj = newy;
-            mw.Show();
-            mw.Update();
+
+            MV.Show();
+
+            MV.Update();
             me?.Close();
         }
         void FuncOpen()
@@ -36,19 +40,19 @@ namespace Vizprog_RGR.ViewModels
             if (selected == null) return;
 
             CurrentProj = selected;
-            mw.Show();
-            mw.Update();
+            MV.Show();
+            MV.Update();
             me?.Close();
         }
         void FuncExit()
         {
             me?.Close();
-            mw.Close();
+            MV.Close();
         }
 
-        public ReactiveCommand<Unit, Unit> Create { get; }
-        public ReactiveCommand<Unit, Unit> Open { get; }
-        public ReactiveCommand<Unit, Unit> Exit { get; }
+        public ReactiveCommand<Unit, Unit> CreateW { get; }
+        public ReactiveCommand<Unit, Unit> OpenW { get; }
+        public ReactiveCommand<Unit, Unit> ExitW { get; }
 
 
         public static Project[] ProjectList { get => map.filer.GetSortedProjects(); }
@@ -64,8 +68,8 @@ namespace Vizprog_RGR.ViewModels
 
             CurrentProj = proj;
 
-            mw.Show();
-            mw.Update();
+            MV.Show();
+            MV.Update();
             me?.Close();
         }
 
@@ -73,6 +77,6 @@ namespace Vizprog_RGR.ViewModels
          * Для тестирования
          */
 
-        public static MainWindow GetMW => mw;
+        public static MainWindow GetMW => MV;
     }
 }

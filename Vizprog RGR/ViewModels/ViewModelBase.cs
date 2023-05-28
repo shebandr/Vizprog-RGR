@@ -1,7 +1,5 @@
 using ReactiveUI;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Vizprog_RGR.Models;
 
 namespace Vizprog_RGR.ViewModels
 {

@@ -1,11 +1,13 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
-using Vizprog_RGR.Models;
 using System.Collections.Generic;
+using Vizprog_RGR.Models;
 
-namespace Vizprog_RGR.Views.Shapes {
-    public interface IGate {
+namespace Vizprog_RGR.Views.Shapes
+{
+    public interface IGate
+    {
         public int CountIns { get; }
         public int CountOuts { get; }
         public UserControl GetSelf();

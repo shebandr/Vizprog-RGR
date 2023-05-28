@@ -1,32 +1,35 @@
-using System.Text;
-using System.Xml.Linq;
-using System.Collections.Generic;
-using System.Linq;
-using Avalonia.Controls;
-using Avalonia.Media.Imaging;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Media;
-using System.Text.Json;
-using Vizprog_RGR.ViewModels;
-using System.Collections;
-using System.Diagnostics;
+using Avalonia.Media.Imaging;
 using System;
-using Avalonia.Controls.Shapes;
-
-using System.Data.SQLite;
+using System.Collections;
+using System.Collections.Generic;
 using System.Data;
-namespace Vizprog_RGR.Models {
-    public static class Utils {
+using System.Data.SQLite;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Xml.Linq;
+using Vizprog_RGR.ViewModels;
+
+namespace Vizprog_RGR.Models
+{
+    public static class Utils
+    {
 
         /*
          * Base64 абилка
          */
 
-        public static string Base64Encode(string plainText) {
+        public static string Base64Encode(string plainText)
+        {
             var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
             return System.Convert.ToBase64String(plainTextBytes);
         }
-        public static string Base64Decode(string base64EncodedData) {
+        public static string Base64Decode(string base64EncodedData)
+        {
             var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
             return Encoding.UTF8.GetString(base64EncodedBytes);
         }
@@ -35,10 +38,13 @@ namespace Vizprog_RGR.Models {
          * JSON абилка
          */
 
-        public static string JsonEscape(string str) {
+        public static string JsonEscape(string str)
+        {
             StringBuilder sb = new();
-            foreach (char i in str) {
-                sb.Append(i switch {
+            foreach (char i in str)
+            {
+                sb.Append(i switch
+                {
                     '"' => "\\\"",
                     '\\' => "\\\\",
                     '$' => "{$", // Чисто по моей части ;'-}
@@ -47,54 +53,62 @@ namespace Vizprog_RGR.Models {
             }
             return sb.ToString();
         }
-        public static string Obj2json(object? obj) { 
-            switch (obj) {
-            case null: return "null";
-            case string @str: return '"' + JsonEscape(str) + '"';
-            case bool @bool: return @bool ? "true" : "false";
-            case short @short: return @short.ToString();
-            case int @int: return @int.ToString();
-            case long @long: return @long.ToString();
-            case float @float: return @float.ToString().Replace(',', '.');
-            case double @double: return @double.ToString().Replace(',', '.');
+        public static string Obj2json(object? obj)
+        {
+            switch (obj)
+            {
+                case null: return "null";
+                case string @str: return '"' + JsonEscape(str) + '"';
+                case bool @bool: return @bool ? "true" : "false";
+                case short @short: return @short.ToString();
+                case int @int: return @int.ToString();
+                case long @long: return @long.ToString();
+                case float @float: return @float.ToString().Replace(',', '.');
+                case double @double: return @double.ToString().Replace(',', '.');
 
-            case Point @point: return "\"$p$" + (int) @point.X + "," + (int) @point.Y + '"';
-            case Size @size: return "\"$s$" + (int) @size.Width + "," + (int) @size.Height + '"';
-            case Points @points: return "\"$P$" + string.Join("|", @points.Select(p => (int) p.X + "," + (int) p.Y)) + '"';
-            case SolidColorBrush @color: return "\"$C$" + @color.Color + '"';
-            case Thickness @thickness: return "\"$T$" + @thickness.Left + "," + @thickness.Top + "," + @thickness.Right + "," + @thickness.Bottom + '"';
+                case Point @point: return "\"$p$" + (int)@point.X + "," + (int)@point.Y + '"';
+                case Size @size: return "\"$s$" + (int)@size.Width + "," + (int)@size.Height + '"';
+                case Points @points: return "\"$P$" + string.Join("|", @points.Select(p => (int)p.X + "," + (int)p.Y)) + '"';
+                case SolidColorBrush @color: return "\"$C$" + @color.Color + '"';
+                case Thickness @thickness: return "\"$T$" + @thickness.Left + "," + @thickness.Top + "," + @thickness.Right + "," + @thickness.Bottom + '"';
 
-            case Dictionary<string, object?> @dict: {
-                StringBuilder sb = new();
-                sb.Append('{');
-                foreach (var entry in @dict) {
-                    if (sb.Length > 1) sb.Append(", ");
-                    sb.Append(Obj2json(entry.Key));
-                    sb.Append(": ");
-                    sb.Append(Obj2json(entry.Value));
-                }
-                sb.Append('}');
-                return sb.ToString();
-            }
-            case IEnumerable @list: {
-                StringBuilder sb = new();
-                sb.Append('[');
-                foreach (object? item in @list) {
-                    if (sb.Length > 1) sb.Append(", ");
-                    sb.Append(Obj2json(item));
-                }
-                sb.Append(']');
-                return sb.ToString();
-            }
-            default: return "(" + obj.GetType() + " ???)";
+                case Dictionary<string, object?> @dict:
+                    {
+                        StringBuilder sb = new();
+                        sb.Append('{');
+                        foreach (var entry in @dict)
+                        {
+                            if (sb.Length > 1) sb.Append(", ");
+                            sb.Append(Obj2json(entry.Key));
+                            sb.Append(": ");
+                            sb.Append(Obj2json(entry.Value));
+                        }
+                        sb.Append('}');
+                        return sb.ToString();
+                    }
+                case IEnumerable @list:
+                    {
+                        StringBuilder sb = new();
+                        sb.Append('[');
+                        foreach (object? item in @list)
+                        {
+                            if (sb.Length > 1) sb.Append(", ");
+                            sb.Append(Obj2json(item));
+                        }
+                        sb.Append(']');
+                        return sb.ToString();
+                    }
+                default: return "(" + obj.GetType() + " ???)";
             }
         }
 
-        private static object JsonHandler(string str) {
+        private static object JsonHandler(string str)
+        {
             if (str.Length < 3 || str[0] != '$' || str[2] != '$') return str.Replace("{$", "$");
             string data = str[3..];
             string[] thick = str[1] == 'T' ? data.Split(',') : System.Array.Empty<string>();
-            return str[1] switch {
+            return str[1] switch
+            {
                 'p' => Point.Parse(data),
                 's' => Size.Parse(data),
 
@@ -103,46 +117,51 @@ namespace Vizprog_RGR.Models {
                 _ => str,
             };
         }
-        private static object? JsonHandler(object? obj) {
+        private static object? JsonHandler(object? obj)
+        {
             if (obj == null) return null;
 
             if (obj is List<object?> @list) return @list.Select(JsonHandler).ToList();
-            if (obj is Dictionary<string, object?> @dict) {
+            if (obj is Dictionary<string, object?> @dict)
+            {
                 return new Dictionary<string, object?>(@dict.Select(pair => new KeyValuePair<string, object?>(pair.Key, JsonHandler(pair.Value))));
             }
-            if (obj is JsonElement @item) {
-                switch (@item.ValueKind) {
-                case JsonValueKind.Undefined: return null;
-                case JsonValueKind.Object:
-                    Dictionary<string, object?> res = new();
-                    foreach (var el in @item.EnumerateObject()) res[el.Name] = JsonHandler(el.Value);
-                    return res;
-                case JsonValueKind.Array:
-                    List<object?> res2 = @item.EnumerateArray().Select(item => JsonHandler((object?) item)).ToList();
-                    return res2;
-                case JsonValueKind.String:
-                    var s = JsonHandler(@item.GetString() ?? "");
+            if (obj is JsonElement @item)
+            {
+                switch (@item.ValueKind)
+                {
+                    case JsonValueKind.Undefined: return null;
+                    case JsonValueKind.Object:
+                        Dictionary<string, object?> res = new();
+                        foreach (var el in @item.EnumerateObject()) res[el.Name] = JsonHandler(el.Value);
+                        return res;
+                    case JsonValueKind.Array:
+                        List<object?> res2 = @item.EnumerateArray().Select(item => JsonHandler((object?)item)).ToList();
+                        return res2;
+                    case JsonValueKind.String:
+                        var s = JsonHandler(@item.GetString() ?? "");
 
-                    return s;
-                case JsonValueKind.Number:
-                    if (@item.ToString().Contains('.')) return @item.GetDouble();
+                        return s;
+                    case JsonValueKind.Number:
+                        if (@item.ToString().Contains('.')) return @item.GetDouble();
 
-                    long a = @item.GetInt64();
-                    int b = @item.GetInt32();
+                        long a = @item.GetInt64();
+                        int b = @item.GetInt32();
 
-                    if (a != b) return a;
+                        if (a != b) return a;
 
-                    return b;
-                case JsonValueKind.True: return true;
-                case JsonValueKind.False: return false;
-                case JsonValueKind.Null: return null;
+                        return b;
+                    case JsonValueKind.True: return true;
+                    case JsonValueKind.False: return false;
+                    case JsonValueKind.Null: return null;
                 }
             }
             Log.Write("JT: " + obj.GetType());
 
             return obj;
         }
-        public static object? Json2obj(string json) {
+        public static object? Json2obj(string json)
+        {
             json = json.Trim();
             if (json.Length == 0) return null;
 
@@ -158,10 +177,13 @@ namespace Vizprog_RGR.Models {
          * XML абилка
          */
 
-        public static string XMLEscape(string str) {
+        public static string XMLEscape(string str)
+        {
             StringBuilder sb = new();
-            foreach (char i in str) {
-                sb.Append(i switch {
+            foreach (char i in str)
+            {
+                sb.Append(i switch
+                {
                     '"' => "&quot;",
                     '\'' => "&apos;",
                     '>' => "&gt;",
@@ -173,13 +195,15 @@ namespace Vizprog_RGR.Models {
             return sb.ToString();
         }
 
-        private static bool IsComposite(object? obj) {
+        private static bool IsComposite(object? obj)
+        {
             if (obj == null) return false;
             if (obj is List<object?> || obj is Dictionary<string, object?> || obj is not JsonElement @item) return true;
             var T = @item.ValueKind;
             return T == JsonValueKind.Object || T == JsonValueKind.Array;
         }
-        private static string Dict2XML(Dictionary<string, object?> dict, string level) {
+        private static string Dict2XML(Dictionary<string, object?> dict, string level)
+        {
             StringBuilder attrs = new();
             StringBuilder items = new();
             foreach (var entry in dict)
@@ -190,11 +214,13 @@ namespace Vizprog_RGR.Models {
             if (items.Length == 0) return level + "<Dict" + attrs.ToString() + "/>";
             return level + "<Dict" + attrs.ToString() + ">" + items.ToString() + level + "</Dict>";
         }
-        private static string List2XML(List<object?> list, string level) {
+        private static string List2XML(List<object?> list, string level)
+        {
             StringBuilder attrs = new();
             StringBuilder items = new();
             int num = 0;
-            foreach (var entry in list) {
+            foreach (var entry in list)
+            {
                 if (IsComposite(entry)) items.Append(ToXMLHandler(entry, level + "\t"));
                 else attrs.Append($" _{num}='" + ToXMLHandler(entry, "{err}") + "'");
                 num++;
@@ -204,33 +230,37 @@ namespace Vizprog_RGR.Models {
             return level + "<List" + attrs.ToString() + ">" + items.ToString() + level + "</List>";
         }
 
-        private static string ToXMLHandler(object? obj, string level) {
+        private static string ToXMLHandler(object? obj, string level)
+        {
             if (obj == null) return "null";
 
             if (obj is List<object?> @list) return List2XML(@list, level);
             if (obj is Dictionary<string, object?> @dict) return Dict2XML(@dict, level);
-            if (obj is JsonElement @item) {
-                switch (@item.ValueKind) {
-                case JsonValueKind.Undefined: return "undefined";
-                case JsonValueKind.Object:
-                    return Dict2XML(new Dictionary<string, object?>(@item.EnumerateObject().Select(pair => new KeyValuePair<string, object?>(pair.Name, pair.Value))), level);
-                case JsonValueKind.Array:
-                    return List2XML(@item.EnumerateArray().Select(item => (object?) item).ToList(), level);
-                case JsonValueKind.String:
-                    var s = XMLEscape(@item.GetString() ?? "null");
+            if (obj is JsonElement @item)
+            {
+                switch (@item.ValueKind)
+                {
+                    case JsonValueKind.Undefined: return "undefined";
+                    case JsonValueKind.Object:
+                        return Dict2XML(new Dictionary<string, object?>(@item.EnumerateObject().Select(pair => new KeyValuePair<string, object?>(pair.Name, pair.Value))), level);
+                    case JsonValueKind.Array:
+                        return List2XML(@item.EnumerateArray().Select(item => (object?)item).ToList(), level);
+                    case JsonValueKind.String:
+                        var s = XMLEscape(@item.GetString() ?? "null");
 
-                    return s;
-                case JsonValueKind.Number: return "$" + @item.ToString(); // escape NUM
-                case JsonValueKind.True: return "_BOOL_yeah";
-                case JsonValueKind.False: return "_BOOL_nop";
-                case JsonValueKind.Null: return "null";
+                        return s;
+                    case JsonValueKind.Number: return "$" + @item.ToString(); // escape NUM
+                    case JsonValueKind.True: return "_BOOL_yeah";
+                    case JsonValueKind.False: return "_BOOL_nop";
+                    case JsonValueKind.Null: return "null";
                 }
             }
             Log.Write("XT: " + obj.GetType());
 
             return "<UnknowType>" + obj.GetType() + "</UnknowType>";
         }
-        public static string? Json2xml(string json) {
+        public static string? Json2xml(string json)
+        {
             json = json.Trim();
             if (json.Length == 0) return null;
 
@@ -242,10 +272,12 @@ namespace Vizprog_RGR.Models {
             return "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + ToXMLHandler(data, "\n");
         }
 
-        private static string ToJSONHandler(string str) {
+        private static string ToJSONHandler(string str)
+        {
             if (str.Length > 1 && str[0] == '$' && str[1] <= '9' && str[1] >= '0') return str[1..]; // unescape NUM
             str = str.Replace("\\", "\\\\");
-            return str switch {
+            return str switch
+            {
                 "null" => "null",
                 "undefined" => "undefined",
                 "_BOOL_yeah" => "true",
@@ -253,48 +285,58 @@ namespace Vizprog_RGR.Models {
                 _ => '"' + str + '"',
             };
         }
-        private static string ToJSONHandler(XElement xml) {
+        private static string ToJSONHandler(XElement xml)
+        {
             var name = xml.Name.LocalName;
             StringBuilder sb = new();
-            if (name == "Dict") {
+            if (name == "Dict")
+            {
                 sb.Append('{');
-                foreach (var attr in xml.Attributes()) {
+                foreach (var attr in xml.Attributes())
+                {
                     if (sb.Length > 1) sb.Append(", ");
                     sb.Append(ToJSONHandler(attr.Name.LocalName));
                     sb.Append(": ");
                     sb.Append(ToJSONHandler(attr.Value));
                 }
-                foreach (var el in xml.Shapes()) {
+                foreach (var el in xml.Elements())
+                {
                     if (sb.Length > 1) sb.Append(", ");
                     sb.Append(ToJSONHandler(el.Name.LocalName));
                     sb.Append(": ");
-                    sb.Append(ToJSONHandler(el.Shapes().ToArray()[0]));
+                    sb.Append(ToJSONHandler(el.Elements().ToArray()[0]));
                 }
                 sb.Append('}');
-            } else if (name == "List") {
+            }
+            else if (name == "List")
+            {
                 var attrs = xml.Attributes().ToArray();
-                var els = xml.Shapes().ToArray();
+                var els = xml.Elements().ToArray();
                 int count = attrs.Length + els.Length;
                 var res = new string[count];
                 var used = new bool[count];
                 int num;
-                foreach (var attr in attrs) {
+                foreach (var attr in attrs)
+                {
                     num = int.Parse(attr.Name.LocalName[1..]);
                     res[num] = ToJSONHandler(attr.Value);
                     used[num] = true;
                 }
                 num = 0;
-                foreach (var el in els) {
+                foreach (var el in els)
+                {
                     while (used[num]) num++;
                     res[num++] = ToJSONHandler(el);
                 }
                 sb.Append('[');
-                foreach (var item in res) {
+                foreach (var item in res)
+                {
                     if (sb.Length > 1) sb.Append(", ");
                     sb.Append(item);
                 }
                 sb.Append(']');
-            } else sb.Append("Type??" + name);
+            }
+            else sb.Append("Type??" + name);
             return sb.ToString();
         }
         public static string Xml2json(string xml) => ToJSONHandler(XElement.Parse(xml));
@@ -303,7 +345,8 @@ namespace Vizprog_RGR.Models {
          * YAML абилка
          */
 
-        public static string YAMLEscape(string str) {
+        public static string YAMLEscape(string str)
+        {
             string[] arr = new[] { "true", "false", "null", "undefined", "" };
             if (arr.Contains(str)) return '"' + str + '"';
 
@@ -316,8 +359,10 @@ namespace Vizprog_RGR.Models {
 
             StringBuilder sb = new();
             sb.Append('"');
-            foreach (char i in str) {
-                sb.Append(i switch {
+            foreach (char i in str)
+            {
+                sb.Append(i switch
+                {
                     '"' => "\\\"",
                     '\\' => "\\\\",
                     _ => i
@@ -327,14 +372,16 @@ namespace Vizprog_RGR.Models {
             return sb.ToString();
         }
 
-        private static string Dict2YAML(Dictionary<string, object?> dict, string level) {
+        private static string Dict2YAML(Dictionary<string, object?> dict, string level)
+        {
             if (dict.Count == 0) return " {}";
             StringBuilder res = new();
             foreach (var entry in dict)
                 res.Append(level + YAMLEscape(entry.Key) + ":" + (IsComposite(entry.Value) ? "" : " ") + ToYAMLHandler(entry.Value, level + "\t"));
             return res.ToString();
         }
-        private static string List2YAML(List<object?> list, string level) {
+        private static string List2YAML(List<object?> list, string level)
+        {
             if (list.Count == 0) return " []";
             StringBuilder res = new();
             foreach (var entry in list)
@@ -342,33 +389,37 @@ namespace Vizprog_RGR.Models {
             return res.ToString();
         }
 
-        private static string ToYAMLHandler(object? obj, string level) {
+        private static string ToYAMLHandler(object? obj, string level)
+        {
             if (obj == null) return "null";
 
             if (obj is List<object?> @list) return List2YAML(@list, level);
             if (obj is Dictionary<string, object?> @dict) return Dict2YAML(@dict, level);
-            if (obj is JsonElement @item) {
-                switch (@item.ValueKind) {
-                case JsonValueKind.Undefined: return "undefined";
-                case JsonValueKind.Object:
-                    return Dict2YAML(new Dictionary<string, object?>(@item.EnumerateObject().Select(pair => new KeyValuePair<string, object?>(pair.Name, pair.Value))), level);
-                case JsonValueKind.Array:
-                    return List2YAML(@item.EnumerateArray().Select(item => (object?) item).ToList(), level);
-                case JsonValueKind.String:
-                    var s = YAMLEscape(@item.GetString() ?? "null");
+            if (obj is JsonElement @item)
+            {
+                switch (@item.ValueKind)
+                {
+                    case JsonValueKind.Undefined: return "undefined";
+                    case JsonValueKind.Object:
+                        return Dict2YAML(new Dictionary<string, object?>(@item.EnumerateObject().Select(pair => new KeyValuePair<string, object?>(pair.Name, pair.Value))), level);
+                    case JsonValueKind.Array:
+                        return List2YAML(@item.EnumerateArray().Select(item => (object?)item).ToList(), level);
+                    case JsonValueKind.String:
+                        var s = YAMLEscape(@item.GetString() ?? "null");
 
-                    return s;
-                case JsonValueKind.Number: return @item.ToString();
-                case JsonValueKind.True: return "true";
-                case JsonValueKind.False: return "false";
-                case JsonValueKind.Null: return "null";
+                        return s;
+                    case JsonValueKind.Number: return @item.ToString();
+                    case JsonValueKind.True: return "true";
+                    case JsonValueKind.False: return "false";
+                    case JsonValueKind.Null: return "null";
                 }
             }
             Log.Write("YT: " + obj.GetType());
             throw new Exception("Чё?!");
         }
 
-        public static string? Json2yaml(string json) {
+        public static string? Json2yaml(string json)
+        {
             json = json.Trim();
             if (json.Length == 0) return null;
 
@@ -377,31 +428,38 @@ namespace Vizprog_RGR.Models {
             else if (json[0] == '{') data = JsonSerializer.Deserialize<Dictionary<string, object?>>(json);
             else return null;
 
-            return "---" + ToYAMLHandler(data, "\n") + "\n"; 
+            return "---" + ToYAMLHandler(data, "\n") + "\n";
         }
 
 
-        private static void YAML_Log(string mess, int level = 0) {
+        private static void YAML_Log(string mess, int level = 0)
+        {
             if (level >= 4) Log.Write(mess);
         }
-        private static string YAML_ParseString(ref string yaml, ref int pos) {
+        private static string YAML_ParseString(ref string yaml, ref int pos)
+        {
             char first = ' ';
             while (" \n\t".Contains(first)) first = yaml[pos++];
             bool quote = first == '"';
             StringBuilder sb = new();
-            if (quote) {
+            if (quote)
+            {
                 char c = yaml[pos++];
-                while (c != '"') {
+                while (c != '"')
+                {
                     sb.Append(c);
                     c = yaml[pos++];
                 }
                 c = yaml[pos++];
                 if (c != ':' && c != '\n') throw new Exception("После '\"' может быть только ':', либо '\n'");
                 if (c == ':') pos--;
-            } else {
+            }
+            else
+            {
                 sb.Append(first);
                 char c = yaml[pos++];
-                while (c != ':' && c != '\n') {
+                while (c != ':' && c != '\n')
+                {
                     sb.Append(c);
                     c = yaml[pos++];
                 }
@@ -410,10 +468,12 @@ namespace Vizprog_RGR.Models {
             YAML_Log("Parsed str: " + sb.ToString(), 1);
             return sb.ToString();
         }
-        private static string YAML_ParseNum(ref string yaml, ref int pos) {
+        private static string YAML_ParseNum(ref string yaml, ref int pos)
+        {
             char c = yaml[pos++];
             StringBuilder sb = new();
-            while ("0123456789.".Contains(c)) {
+            while ("0123456789.".Contains(c))
+            {
                 sb.Append(c);
                 c = yaml[pos++];
             }
@@ -421,7 +481,8 @@ namespace Vizprog_RGR.Models {
             YAML_Log("Parsed num: " + sb.ToString(), 1);
             return sb.ToString();
         }
-        private static string YAML_ParseItem(ref string yaml, ref int pos) {
+        private static string YAML_ParseItem(ref string yaml, ref int pos)
+        {
             char first = ' ';
             while (" \n\t".Contains(first)) first = yaml[pos++];
             pos--;
@@ -435,162 +496,194 @@ namespace Vizprog_RGR.Models {
             if (arr.Contains(str)) return str;
             return '"' + str + '"';
         }
-        private static string YAML_ParseLayer(ref string yaml, ref int pos) {
+        private static string YAML_ParseLayer(ref string yaml, ref int pos)
+        {
             if (pos == yaml.Length) return ""; // Конец файла
             StringBuilder sb = new();
             char first = yaml[pos++];
-            while (" \t".Contains(first)) {
+            while (" \t".Contains(first))
+            {
                 sb.Append(first);
                 first = yaml[pos++];
             }
             pos--;
             return sb.ToString();
         }
-        private static string YAML_ToJSONHandler(ref string yaml, ref int pos) {
+        private static string YAML_ToJSONHandler(ref string yaml, ref int pos)
+        {
             var layer = YAML_ParseLayer(ref yaml, ref pos);
             if (pos == yaml.Length) return ""; // Конец файла
             char first = yaml[pos++];
 
-            switch (first) {
-            case '[':
-                if (yaml[pos++] != ']' || yaml[pos++] != '\n') throw new Exception("После [ ожидалось ]\\n");
-                return "[]";
-            case '{':
-                if (yaml[pos++] != '}' || yaml[pos++] != '\n') throw new Exception("После { ожидалось }\\n");
-                return "{}";
-            case '-': {
-                StringBuilder res = new();
-                res.Append('[');
-                bool First = true;
-                pos--;
-                while (true) {
-                    if (pos == yaml.Length) break; // Конец файла
+            switch (first)
+            {
+                case '[':
+                    if (yaml[pos++] != ']' || yaml[pos++] != '\n') throw new Exception("После [ ожидалось ]\\n");
+                    return "[]";
+                case '{':
+                    if (yaml[pos++] != '}' || yaml[pos++] != '\n') throw new Exception("После { ожидалось }\\n");
+                    return "{}";
+                case '-':
+                    {
+                        StringBuilder res = new();
+                        res.Append('[');
+                        bool First = true;
+                        pos--;
+                        while (true)
+                        {
+                            if (pos == yaml.Length) break; // Конец файла
 
-                    if (First) First = false;
-                    else {
-                        var saved_pos2 = pos;
-                        var layer3 = YAML_ParseLayer(ref yaml, ref pos);
-                        YAML_Log("DOWN_LAYER: '" + layer + "', '" + layer3 + "'");
-                        if (layer != layer3) {
-                            if (layer3.Length > layer.Length) throw new Exception("Ожидался элемент списка вместо подъёма");
-                            if (!layer.StartsWith(layer3)) throw new Exception("Странность в упавшем layer'е");
-                            YAML_Log("Падение"); pos = saved_pos2; break;
+                            if (First) First = false;
+                            else
+                            {
+                                var saved_pos2 = pos;
+                                var layer3 = YAML_ParseLayer(ref yaml, ref pos);
+                                YAML_Log("DOWN_LAYER: '" + layer + "', '" + layer3 + "'");
+                                if (layer != layer3)
+                                {
+                                    if (layer3.Length > layer.Length) throw new Exception("Ожидался элемент списка вместо подъёма");
+                                    if (!layer.StartsWith(layer3)) throw new Exception("Странность в упавшем layer'е");
+                                    YAML_Log("Падение"); pos = saved_pos2; break;
+                                }
+
+                                res.Append(", ");
+                            }
+
+                            if (yaml[pos++] != '-') throw new Exception("Ожидалось '-' в следующем элементе списка");
+
+                            char c = yaml[pos++];
+                            if (c == ' ')
+                            {
+                                var value = YAML_ParseItem(ref yaml, ref pos);
+                                res.Append(value);
+                            }
+                            else if (c == '\n')
+                            {
+                            }
+                            else throw new Exception("После '-' ожидалось ' ', либо '\n'");
+
+                            int saved_pos = pos;
+                            var layer2 = YAML_ParseLayer(ref yaml, ref pos);
+                            YAML_Log("LAYER: '" + layer + "', '" + layer2 + "'");
+                            if (layer2.Length < layer.Length)
+                            {
+                                if (!layer.StartsWith(layer2)) throw new Exception("Странность в упавшем layer'е");
+                                YAML_Log("Падение"); pos = saved_pos; break;
+                            }
+                            if (!layer2.StartsWith(layer)) throw new Exception("Странность в следующем layer'е");
+                            if (layer == layer2) { YAML_Log("Сохранение"); pos = saved_pos; continue; }
+                            YAML_Log("Подъём");
+                            if (c == '\n')
+                            {
+                                pos = saved_pos;
+                                var value = YAML_ToJSONHandler(ref yaml, ref pos);
+                                res.Append(value);
+                            }
+                            else throw new Exception("Здесь не может быть подъёма");
                         }
-
-                        res.Append(", ");
+                        res.Append(']');
+                        YAML_Log("Список рождён: " + res.ToString(), 2);
+                        return res.ToString();
                     }
+                case '"':
+                default:
+                    {
+                        pos--;
+                        StringBuilder res = new();
+                        res.Append('{');
+                        bool First = true;
+                        while (true)
+                        {
+                            if (pos == yaml.Length) break; // Конец файла
 
-                    if (yaml[pos++] != '-') throw new Exception("Ожидалось '-' в следующем элементе списка");
+                            if (First) First = false;
+                            else
+                            {
+                                var saved_pos2 = pos;
+                                var layer3 = YAML_ParseLayer(ref yaml, ref pos);
+                                YAML_Log("DICT_LAYER: '" + layer + "', '" + layer3 + "'");
+                                if (layer != layer3)
+                                {
+                                    if (layer3.Length > layer.Length) throw new Exception("Ожидался элемент словаря вместо подъёма");
+                                    if (!layer.StartsWith(layer3)) throw new Exception("Странность в упавшем layer'е");
+                                    YAML_Log("Падение"); pos = saved_pos2; break;
+                                }
 
-                    char c = yaml[pos++];
-                    if (c == ' ') {
-                        var value = YAML_ParseItem(ref yaml, ref pos);
-                        res.Append(value);
-                    } else if (c == '\n') {
-                    } else throw new Exception("После '-' ожидалось ' ', либо '\n'");
+                                res.Append(", ");
+                            }
 
-                    int saved_pos = pos;
-                    var layer2 = YAML_ParseLayer(ref yaml, ref pos);
-                    YAML_Log("LAYER: '" + layer + "', '" + layer2 + "'");
-                    if (layer2.Length < layer.Length) {
-                        if (!layer.StartsWith(layer2)) throw new Exception("Странность в упавшем layer'е");
-                        YAML_Log("Падение"); pos = saved_pos; break;
-                    }
-                    if (!layer2.StartsWith(layer)) throw new Exception("Странность в следующем layer'е");
-                    if (layer == layer2) { YAML_Log("Сохранение"); pos = saved_pos; continue; }
-                    YAML_Log("Подъём");
-                    if (c == '\n') {
-                        pos = saved_pos;
-                        var value = YAML_ToJSONHandler(ref yaml, ref pos);
-                        res.Append(value);
-                    } else throw new Exception("Здесь не может быть подъёма");
-                }
-                res.Append(']');
-                YAML_Log("Список рождён: " + res.ToString(), 2);
-                return res.ToString(); }
-            case '"':
-            default: {
-                pos--;
-                StringBuilder res = new();
-                res.Append('{');
-                bool First = true;
-                while (true) {
-                    if (pos == yaml.Length) break; // Конец файла
+                            var key = YAML_ParseString(ref yaml, ref pos);
+                            res.Append('"');
+                            res.Append(key);
+                            res.Append("\": ");
+                            if (yaml[pos++] != ':') throw new Exception("После ключа ожидалось ':'");
 
-                    if (First) First = false;
-                    else {
-                        var saved_pos2 = pos;
-                        var layer3 = YAML_ParseLayer(ref yaml, ref pos);
-                        YAML_Log("DICT_LAYER: '" + layer + "', '" + layer3 + "'");
-                        if (layer != layer3) {
-                            if (layer3.Length > layer.Length) throw new Exception("Ожидался элемент словаря вместо подъёма");
-                            if (!layer.StartsWith(layer3)) throw new Exception("Странность в упавшем layer'е");
-                            YAML_Log("Падение"); pos = saved_pos2; break;
+                            char c = yaml[pos++];
+                            if (c == ' ')
+                            {
+                                var value = YAML_ParseItem(ref yaml, ref pos);
+                                res.Append(value);
+                            }
+                            else if (c == '\n')
+                            {
+                            }
+                            else throw new Exception("После ключа и ':' ожидалось ' ', либо '\n'");
+
+                            int saved_pos = pos;
+                            var layer2 = YAML_ParseLayer(ref yaml, ref pos);
+                            YAML_Log("LAYER: '" + layer + "', '" + layer2 + "'");
+                            if (layer2.Length < layer.Length)
+                            {
+                                if (!layer.StartsWith(layer2)) throw new Exception("Странность в упавшем layer'е");
+                                YAML_Log("Падение"); pos = saved_pos; break;
+                            }
+                            if (!layer2.StartsWith(layer)) throw new Exception("Странность в следующем layer'е");
+                            if (layer == layer2) { YAML_Log("Сохранение"); pos = saved_pos; continue; }
+                            YAML_Log("Подъём");
+                            if (c == '\n')
+                            {
+                                pos = saved_pos;
+                                var value = YAML_ToJSONHandler(ref yaml, ref pos);
+                                res.Append(value);
+                            }
+                            else throw new Exception("Здесь не может быть подъёма");
                         }
-
-                        res.Append(", ");
+                        res.Append('}');
+                        YAML_Log("Словарь рождён: " + res.ToString(), 2);
+                        return res.ToString();
                     }
-
-                    var key = YAML_ParseString(ref yaml, ref pos);
-                    res.Append('"');
-                    res.Append(key);
-                    res.Append("\": ");
-                    if (yaml[pos++] != ':') throw new Exception("После ключа ожидалось ':'");
-
-                    char c = yaml[pos++];
-                    if (c == ' ') {
-                        var value = YAML_ParseItem(ref yaml, ref pos);
-                        res.Append(value);
-                    } else if (c == '\n') {
-                    } else throw new Exception("После ключа и ':' ожидалось ' ', либо '\n'");
-
-                    int saved_pos = pos;
-                    var layer2 = YAML_ParseLayer(ref yaml, ref pos);
-                    YAML_Log("LAYER: '" + layer + "', '" + layer2 + "'");
-                    if (layer2.Length < layer.Length) {
-                        if (!layer.StartsWith(layer2)) throw new Exception("Странность в упавшем layer'е");
-                        YAML_Log("Падение"); pos = saved_pos; break;
-                    }
-                    if (!layer2.StartsWith(layer)) throw new Exception("Странность в следующем layer'е");
-                    if (layer == layer2) { YAML_Log("Сохранение"); pos = saved_pos; continue; }
-                    YAML_Log("Подъём");
-                    if (c == '\n') {
-                        pos = saved_pos;
-                        var value = YAML_ToJSONHandler(ref yaml, ref pos);
-                        res.Append(value);
-                    } else throw new Exception("Здесь не может быть подъёма");
-                }
-                res.Append('}');
-                YAML_Log("Словарь рождён: " + res.ToString(), 2);
-                return res.ToString(); }
             }
         }
-        public static string Yaml2json(string yaml) {
-            try {
+        public static string Yaml2json(string yaml)
+        {
+            try
+            {
                 yaml = yaml.Replace("\r", "");
                 if (!yaml.StartsWith("---\n")) throw new Exception("Это не YAML");
                 int pos = 4;
                 var res = YAML_ToJSONHandler(ref yaml, ref pos);
                 YAML_Log("data: " + res, 3);
                 return res;
-            } catch (Exception e) { Log.Write("Ошибка YAML парсера: " + e); throw; }
+            }
+            catch (Exception e) { Log.Write("Ошибка YAML парсера: " + e); throw; }
         }
 
         /*
          * Misc
          */
 
-        public static string? Obj2xml(object? obj) => Json2xml(Obj2json(obj)); 
+        public static string? Obj2xml(object? obj) => Json2xml(Obj2json(obj));
         public static object? Xml2obj(string xml) => Json2obj(Xml2json(xml));
         public static string? Obj2yaml(object? obj) => Json2yaml(Obj2json(obj));
         public static object? Yaml2obj(string xml) => Json2obj(Yaml2json(xml));
 
-        public static void RenderToFile(Control target, string path) {
+        public static void RenderToFile(Control target, string path)
+        {
             // var target = (Control?) tar.Parent;
             // if (target == null) return;
 
             double w = target.Bounds.Width, h = target.Bounds.Height;
-            var pixelSize = new PixelSize((int) w, (int) h);
+            var pixelSize = new PixelSize((int)w, (int)h);
             var size = new Size(w, h);
             using RenderTargetBitmap bitmap = new(pixelSize);
             target.Measure(size);
@@ -599,9 +692,11 @@ namespace Vizprog_RGR.Models {
             bitmap.Save(path);
         }
 
-        public static string TrimAll(this string str) { // Помимо пробелов по бокам, убирает повторы пробелов внутри
+        public static string TrimAll(this string str)
+        { // Помимо пробелов по бокам, убирает повторы пробелов внутри
             StringBuilder sb = new();
-            for (int i = 0; i < str.Length; i++) {
+            for (int i = 0; i < str.Length; i++)
+            {
                 if (i > 0 && str[i] == ' ' && str[i - 1] == ' ') continue;
                 sb.Append(str[i]);
             }
@@ -611,10 +706,12 @@ namespace Vizprog_RGR.Models {
 
         public static string[] NormSplit(this string str) => str.TrimAll().Split(' ');
 
-        public static string GetStackInfo() {
+        public static string GetStackInfo()
+        {
             var st = new StackTrace();
             var sb = new StringBuilder();
-            for (int i = 1; i < 11; i++) {
+            for (int i = 1; i < 11; i++)
+            {
                 var frame = st.GetFrame(i);
                 if (frame == null) continue;
 
@@ -627,27 +724,33 @@ namespace Vizprog_RGR.Models {
             return sb.ToString();
         }
 
-        public static int Normalize(this int num, int min, int max) {
+        public static int Normalize(this int num, int min, int max)
+        {
             if (num < min) return min;
             if (num > max) return max;
             return num;
         }
-        public static double Normalize(this double num, double min, double max) {
+        public static double Normalize(this double num, double min, double max)
+        {
             if (num < min) return min;
             if (num > max) return max;
             return num;
         }
 
-        public static double Hypot(this Point delta) {
+        public static double Hypot(this Point delta)
+        {
             return Math.Sqrt(Math.Pow(delta.X, 2) + Math.Pow(delta.Y, 2));
         }
-        public static double Hypot(this Point A, Point B) {
+        public static double Hypot(this Point A, Point B)
+        {
             Point delta = A - B;
             return Math.Sqrt(Math.Pow(delta.X, 2) + Math.Pow(delta.Y, 2));
         }
 
-        public static double? ToDouble(this object num) {
-            return num switch {
+        public static double? ToDouble(this object num)
+        {
+            return num switch
+            {
                 int @int => @int,
                 long @long => @long,
                 double @double => @double,
@@ -660,38 +763,43 @@ namespace Vizprog_RGR.Models {
         public static double Min(this double A, double B) => A < B ? A : B;
         public static double Max(this double A, double B) => A > B ? A : B;
 
-        public static void Remove(this Control item) {
-            var p = (Panel?) item.Parent; 
+        public static void Remove(this Control item)
+        {
+            var p = (Panel?)item.Parent;
             p?.Children.Remove(item);
         }
 
-        public static Point Center(this Visual item, Visual? parent) {
+        public static Point Center(this Visual item, Visual? parent)
+        {
             var tb = item.TransformedBounds;
-            if (tb == null) return new(); 
+            if (tb == null) return new();
             var bounds = tb.Value.Bounds.TransformToAABB(tb.Value.Transform);
             var res = bounds.Center;
-            if (parent == null) return res; 
+            if (parent == null) return res;
 
             var tb2 = parent.TransformedBounds;
-            if (tb2 == null) return res; 
+            if (tb2 == null) return res;
             var bounds2 = tb2.Value.Bounds.TransformToAABB(tb2.Value.Transform);
             return res - bounds2.TopLeft;
         }
 
-        public static DateTime UnixTimeStampToDateTime(this long unixTimeStamp) {
+        public static DateTime UnixTimeStampToDateTime(this long unixTimeStamp)
+        {
             DateTime dateTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dateTime;
         }
-        public static string UnixTimeStampToString(this long unixTimeStamp) {
+        public static string UnixTimeStampToString(this long unixTimeStamp)
+        {
             return UnixTimeStampToDateTime(unixTimeStamp).ToString("yyyy/MM/dd H:mm:ss");
         }
-        
+
         /*
          * SQLite_proj_list абилка
          */
 
-        internal static void Obj2sqlite_proj_list(string[] proj_list, string path) {
+        internal static void Obj2sqlite_proj_list(string[] proj_list, string path)
+        {
             using var con = new SQLiteConnection("Data Source=" + path);
 
             con.Open();
@@ -711,7 +819,8 @@ CREATE TABLE header (
             con.Dispose();
         }
 
-        internal static string[] SQLite_proj_list2obj(string path) {
+        internal static string[] SQLite_proj_list2obj(string path)
+        {
             using var con = new SQLiteConnection("Data Source=" + path);
             con.Open();
             if (con.State != ConnectionState.Open) throw new Exception("Не удалось открыть SQLite: " + con.State);
@@ -719,14 +828,15 @@ CREATE TABLE header (
             List<string> res = new();
 
             var sql_comm = new SQLiteCommand("SELECT * FROM header", con);
-            using (var reader = sql_comm.ExecuteReader()) {
+            using (var reader = sql_comm.ExecuteReader())
+            {
                 if (!reader.HasRows) throw new Exception("Не вышло считать заголовочную таблицу SQLite :/");
                 if (!reader.Read()) throw new Exception("Заголовочная таблица пустует");
 
                 var row = Enumerable.Range(0, reader.VisibleFieldCount).Select(x => reader[x]).ToArray();
                 Log.Write("row: " + Obj2json(row));
 
-                res.Add((string) row[1]);
+                res.Add((string)row[1]);
             }
 
             con.Dispose();

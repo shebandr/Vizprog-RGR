@@ -3,17 +3,19 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Vizprog_RGR.Models;
-using Vizprog_RGR.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Vizprog_RGR.Models;
+using Vizprog_RGR.ViewModels;
 
-namespace Vizprog_RGR.Views.Shapes {
-    public abstract class GateBase: UserControl {
-        public int CountIns { get; private set; }
-        public int CountOuts { get; private set; }
+namespace Vizprog_RGR.Views.Shapes
+{
+    public abstract class GateBase : UserControl
+    {
+        public virtual int CountIns { get; private set; }
+        public virtual int CountOuts { get; private set; }
         public abstract UserControl GetSelf();
         protected abstract IGate GetSelfI { get; }
         protected abstract void Init();
@@ -29,7 +31,8 @@ namespace Vizprog_RGR.Views.Shapes {
         protected bool use_bottom;
         private int[][] pin_data;
 
-        public GateBase() {
+        public GateBase()
+        {
             var sides = Sides;
             use_top = sides[0].Length > 0;
             use_left = sides[1].Length > 0;
@@ -38,11 +41,13 @@ namespace Vizprog_RGR.Views.Shapes {
             int ins = 0, outs = 0, ios = 0, n = 0;
             List<int[]> pin_d = new();
             foreach (var side in sides)
-                foreach (var type in side) {
-                    switch (type) {
-                    case 0: pin_d.Add(new int[] { 0, ins }); ins++; break;
-                    case 1: pin_d.Add(new int[] { 1, outs }); outs++; break;
-                    case 2: pin_d.Add(new int[] { 2, ios }); ios++; break;
+                foreach (var type in side)
+                {
+                    switch (type)
+                    {
+                        case 0: pin_d.Add(new int[] { 0, ins }); ins++; break;
+                        case 1: pin_d.Add(new int[] { 1, outs }); outs++; break;
+                        case 2: pin_d.Add(new int[] { 2, ios }); ios++; break;
                     }
                     if (type != -1) n++;
                 }
@@ -55,9 +60,9 @@ namespace Vizprog_RGR.Views.Shapes {
             if (height < width) height = width;
 
             DataContext = GetSelf();
-            Init(); 
+            Init();
 
-            var canv = (Canvas) LogicalChildren[0];
+            var canv = (Canvas)LogicalChildren[0];
             List<Line> list = new();
             List<Ellipse> list2 = new();
             if (canv.Children[0] is not Border b) throw new Exception("Такого не бывает");
@@ -65,7 +70,8 @@ namespace Vizprog_RGR.Views.Shapes {
             border.ZIndex = 2;
 
             foreach (var side in sides)
-                foreach (var type in side) {
+                foreach (var type in side)
+                {
                     if (type < 0) continue;
 
                     var newy = new Line() { Tag = "Pin", ZIndex = 1, Stroke = Brushes.Gray };
@@ -90,7 +96,8 @@ namespace Vizprog_RGR.Views.Shapes {
          * Всё о размерах и позициях самого элемента ;'-}
          */
 
-        public void Move(Point pos, bool global = false) {
+        public void Move(Point pos, bool global = false)
+        {
             Margin = new(pos.X - UC_Width / 2, pos.Y - UC_Height / 2, 0, 0);
 
             UpdateJoins(global);
@@ -98,13 +105,15 @@ namespace Vizprog_RGR.Views.Shapes {
 
         private double MinW => BodyRadius.TopLeft * 1.5 + (EllipseSize + BaseFraction * 2) * (Sides[0].Length.Max(Sides[3].Length).Max(2) - 0.8);
         private double MinH => BodyRadius.TopLeft * 1.5 + (EllipseSize + BaseFraction * 2) * (Sides[1].Length.Max(Sides[2].Length).Max(2) - 0.8);
-        public void Resize(Size size, bool global = false) {
+        public void Resize(Size size, bool global = false)
+        {
             width = global ? size.Width : size.Width.Max(MinW);
             height = global ? size.Height : size.Height.Max(MinH);
             RecalcSizes();
             UpdateJoins(global);
         }
-        public void ChangeScale(double scale, bool global = false) {
+        public void ChangeScale(double scale, bool global = false)
+        {
             var fix = GetPos();
             base_size *= scale;
             width *= scale;
@@ -149,69 +158,86 @@ namespace Vizprog_RGR.Views.Shapes {
 
         public double FontSizze => BodyRadius.TopLeft / 1.3;
 
-        public Thickness ImageMargins { get {
-            double R = BodyRadius.BottomLeft;
-            double num = R - R / Math.Sqrt(2);
-            return new(0, 0, num, num); // Картинка с переместителем
-        } }
-
-
-
-        public Point[][] PinPoints { get {
-            List<Point[]> res = new();
-            int n = -1;
-            double R = BodyRadius.TopLeft;
-            double min = EllipseSize + BaseFraction * 2;
-            double pin_start = EllipseSize - EllipseStrokeSize / 2;
-            double pin_width = base_size - EllipseSize + PinStrokeSize;
-
-            foreach (var side in Sides) {
-                n++;
-                double count = side.Length;
-                if (count == 0) continue;
-
-                double body_len = n == 0 || n == 3 ? height : width;
-                double body_len2 = n == 0 || n == 3 ? width : height;
-                double delta = n < 2 ? pin_start : (n == 2 ? (use_left ? base_size : 0) : (use_top ? base_size : 0)) + body_len - EllipseStrokeSize / 2;
-                double left = R, mid = body_len2 / 2, right = body_len2 - R;
-                bool overflow = count > 1 && (right - left) / count < min;
-                int n2 = 0;
-                foreach (int type in side) {
-                    double delta2 = overflow ?
-                        mid + min * (n2 - (count - 1) / 2) :
-                        left + (right - left) / (count * 2) * (n2 * 2 + 1);
-                    if (type >= 0) res.Add(n == 0 || n == 3 ?
-                        new Point[] { new(delta2 + (use_left ? base_size : 0), delta), new(0, pin_width) } :
-                        new Point[] { new(delta, delta2 + (use_top ? base_size : 0)), new(pin_width, 0) }
-                    );;
-                    n2++;
-                }
+        public Thickness ImageMargins
+        {
+            get
+            {
+                double R = BodyRadius.BottomLeft;
+                double num = R - R / Math.Sqrt(2);
+                return new(0, 0, num, num); // Картинка с переместителем
             }
-            return res.ToArray();
-        } }
+        }
 
-        public Thickness[] EllipseMargins { get {
-            Point[][] pins = PinPoints;
-            double R2 = EllipseSize / 2;
-            double X = UC_Width - EllipseSize;
-            double Y = UC_Height - EllipseSize;
-            int n = 0, side_n = 0;
-            List<Thickness> list = new();
-            foreach (var side in Sides) {
-                foreach (var type in side) {
-                    if (type == -1) continue;
-                    var pin_line = pins[n++];
-                    switch (side_n) {
-                    case 0: list.Add(new(pin_line[0].Y - R2, 0, 0, 0)); break;
-                    case 1: list.Add(new(0, pin_line[0].Y - R2, 0, 0)); break;
-                    case 2: list.Add(new(X, pin_line[0].Y - R2, 0, 0)); break;
-                    case 3: list.Add(new(pin_line[0].X - R2, Y, 0, 0)); break;
+
+
+        public virtual Point[][] PinPoints
+        {
+            get
+            {
+                List<Point[]> res = new();
+                int n = -1;
+                double R = BodyRadius.TopLeft;
+                double min = EllipseSize + BaseFraction * 2;
+                double pin_start = EllipseSize - EllipseStrokeSize / 2;
+                double pin_width = base_size - EllipseSize + PinStrokeSize;
+
+                foreach (var side in Sides)
+                {
+                    n++;
+                    double count = side.Length;
+                    if (count == 0) continue;
+
+                    double body_len = n == 0 || n == 3 ? height : width;
+                    double body_len2 = n == 0 || n == 3 ? width : height;
+                    double delta = n < 2 ? pin_start : (n == 2 ? (use_left ? base_size : 0) : (use_top ? base_size : 0)) + body_len - EllipseStrokeSize / 2;
+                    double left = R, mid = body_len2 / 2, right = body_len2 - R;
+                    bool overflow = count > 1 && (right - left) / count < min;
+                    int n2 = 0;
+                    foreach (int type in side)
+                    {
+                        double delta2 = overflow ?
+                            mid + min * (n2 - (count - 1) / 2) :
+                            left + (right - left) / (count * 2) * (n2 * 2 + 1);
+                        if (type >= 0) res.Add(n == 0 || n == 3 ?
+                            new Point[] { new(delta2 + (use_left ? base_size : 0), delta), new(0, pin_width) } :
+                            new Point[] { new(delta, delta2 + (use_top ? base_size : 0)), new(pin_width, 0) }
+                        ); ;
+                        n2++;
                     }
                 }
-                side_n++;
+                return res.ToArray();
             }
-            return ellipse_margins = list.ToArray();
-        } }
+        }
+
+        public Thickness[] EllipseMargins
+        {
+            get
+            {
+                Point[][] pins = PinPoints;
+                double R2 = EllipseSize / 2;
+                double X = UC_Width - EllipseSize;
+                double Y = UC_Height - EllipseSize;
+                int n = 0, side_n = 0;
+                List<Thickness> list = new();
+                foreach (var side in Sides)
+                {
+                    foreach (var type in side)
+                    {
+                        if (type == -1) continue;
+                        var pin_line = pins[n++];
+                        switch (side_n)
+                        {
+                            case 0: list.Add(new(pin_line[0].Y - R2, 0, 0, 0)); break;
+                            case 1: list.Add(new(0, pin_line[0].Y - R2, 0, 0)); break;
+                            case 2: list.Add(new(X, pin_line[0].Y - R2, 0, 0)); break;
+                            case 3: list.Add(new(pin_line[0].X - R2, Y, 0, 0)); break;
+                        }
+                    }
+                    side_n++;
+                }
+                return ellipse_margins = list.ToArray();
+            }
+        }
 
         public double ImageSize => base_size / 25 * 24;
 
@@ -221,7 +247,8 @@ namespace Vizprog_RGR.Views.Shapes {
         public event PropertyChangedEventHandler? PropertyChanged;
 #pragma warning restore CS0108
 
-        protected void RecalcSizes() {
+        protected void RecalcSizes()
+        {
 
             PropertyChanged?.Invoke(this, new(nameof(BodyStrokeSize)));
             PropertyChanged?.Invoke(this, new(nameof(BodyMargin)));
@@ -242,11 +269,13 @@ namespace Vizprog_RGR.Views.Shapes {
             MyRecalcSizes();
         }
 
-        protected void MyRecalcSizes() {
+        protected void MyRecalcSizes()
+        {
             var pin_points = PinPoints;
             var pin_stroke_size = PinStrokeSize;
             int n = 0;
-            foreach (var line in line_arr) {
+            foreach (var line in line_arr)
+            {
 
                 var A = pin_points[n][0];
                 var B = pin_points[n++][1];
@@ -261,7 +290,8 @@ namespace Vizprog_RGR.Views.Shapes {
             var ellipse_margin = EllipseMargins;
             var ellipse_size = EllipseSize;
             var ellipse_stroke_size = EllipseStrokeSize;
-            foreach (var pin in pins) {
+            foreach (var pin in pins)
+            {
                 pin.Margin = ellipse_margin[n++];
                 pin.Width = ellipse_size;
                 pin.Height = ellipse_size;
@@ -276,17 +306,23 @@ namespace Vizprog_RGR.Views.Shapes {
         protected JoinedItems?[] joins_in;
         protected List<JoinedItems>[] joins_out;
 
-        public void AddJoin(JoinedItems join) {
-            for (int i = 0; i < 2; i++) {
+        public void AddJoin(JoinedItems join)
+        {
+            for (int i = 0; i < 2; i++)
+            {
                 var dist = i == 0 ? join.A : join.B;
-                if (dist.parent == this) {
+                if (dist.parent == this)
+                {
                     int[] data = pin_data[dist.num];
                     int n = data[1];
-                    if (data[0] == 0) {
+                    if (data[0] == 0)
+                    {
                         joins_in[n]?.Delete();
                         joins_in[n] = join;
 
-                    } else {
+                    }
+                    else
+                    {
                         joins_out[n].Add(join);
 
                     }
@@ -295,10 +331,13 @@ namespace Vizprog_RGR.Views.Shapes {
             skip_upd = false;
         }
 
-        public void RemoveJoin(JoinedItems join) {
-            for (int i = 0; i < 2; i++) {
+        public void RemoveJoin(JoinedItems join)
+        {
+            for (int i = 0; i < 2; i++)
+            {
                 var dist = i == 0 ? join.A : join.B;
-                if (dist.parent == this) {
+                if (dist.parent == this)
+                {
                     int[] data = pin_data[dist.num];
                     int n = data[1];
                     if (data[0] == 0) joins_in[n] = null;
@@ -308,28 +347,33 @@ namespace Vizprog_RGR.Views.Shapes {
             skip_upd = false;
         }
 
-        public void UpdateJoins(bool global) {
+        public void UpdateJoins(bool global)
+        {
             foreach (var join in joins_in) join?.Update();
             if (!global)
                 foreach (var joins in joins_out)
                     foreach (var join in joins) join.Update();
         }
 
-        public void ClearJoins() {
+        public void ClearJoins()
+        {
             foreach (var join in joins_in) join?.Delete();
             foreach (var joins in joins_out)
                 foreach (var join in joins.ToArray()) join.Delete();
         }
 
-        public void SetJoinColor(int o_num, bool value) {
+        public void SetJoinColor(int o_num, bool value)
+        {
             var joins = joins_out[o_num];
-            Dispatcher.UIThread.InvokeAsync(() => { 
-                foreach(var join in joins)
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                foreach (var join in joins)
                     join.line.Stroke = value ? Brushes.Lime : Brushes.DarkGray;
             });
         }
 
-        public bool ContainsJoin(JoinedItems join) {
+        public bool ContainsJoin(JoinedItems join)
+        {
             foreach (var join2 in joins_in) if (join == join2) return true;
             foreach (var joins in joins_out)
                 foreach (var join2 in joins) if (join == join2) return true;
@@ -340,10 +384,12 @@ namespace Vizprog_RGR.Views.Shapes {
          * Обработка пинов
          */
 
-        public Distantor GetPin(Ellipse finded) {
+        public Distantor GetPin(Ellipse finded)
+        {
             int n = 0;
-            foreach (var pin in pins) {
-                if (pin == finded) return new(GetSelfI, n, (string?) finded.Tag ?? "");
+            foreach (var pin in pins)
+            {
+                if (pin == finded) return new(GetSelfI, n, (string?)finded.Tag ?? "");
                 n++;
             }
             throw new Exception("Так не бывает");
@@ -353,7 +399,8 @@ namespace Vizprog_RGR.Views.Shapes {
 
         Thickness[] ellipse_margins = Array.Empty<Thickness>();
 
-        public Point GetPinPos(int n) {
+        public Point GetPinPos(int n)
+        {
 
             var m = ellipse_margins[n];
             double R2 = EllipseSize / 2;
@@ -367,18 +414,22 @@ namespace Vizprog_RGR.Views.Shapes {
         public int[][] GetPinData() => pin_data;
 
         bool skip_upd = true;
-        public void LogicUpdate(Dictionary<IGate, Meta> ids, Meta me) {
+        public void LogicUpdate(Dictionary<IGate, Meta> ids, Meta me)
+        {
             if (skip_upd) return;
             skip_upd = true;
 
             int ins = CountIns;
-            for (int i = 0; i < ins; i++) {
+            for (int i = 0; i < ins; i++)
+            {
                 var join = joins_in[i];
                 if (join == null) { me.ins[i] = 0; continue; }
 
-                if (join.A.parent == this) {
+                if (join.A.parent == this)
+                {
                     var item = join.B;
-                    if (item.tag == "Out" || item.tag == "IO") {
+                    if (item.tag == "Out" || item.tag == "IO")
+                    {
                         var p = item.parent;
                         Meta meta = ids[p];
                         int[] data = p.GetPinData()[item.num];
@@ -386,9 +437,11 @@ namespace Vizprog_RGR.Views.Shapes {
 
                     }
                 }
-                if (join.B.parent == this) {
+                if (join.B.parent == this)
+                {
                     var item = join.A;
-                    if (item.tag == "Out" || item.tag == "IO") {
+                    if (item.tag == "Out" || item.tag == "IO")
+                    {
                         var p = item.parent;
                         Meta meta = ids[p];
                         int[] data = p.GetPinData()[item.num];
@@ -405,8 +458,10 @@ namespace Vizprog_RGR.Views.Shapes {
 
         public abstract int TypeId { get; }
 
-        public object Export() {
-            var res = new Dictionary<string, object> {
+        public object Export()
+        {
+            var res = new Dictionary<string, object>
+            {
                 ["id"] = TypeId,
                 ["pos"] = GetPos(),
                 ["size"] = GetBodySize(),
@@ -418,53 +473,61 @@ namespace Vizprog_RGR.Views.Shapes {
         }
         public virtual Dictionary<string, object>? ExtraExport() => null;
 
-        public List<object[]> ExportJoins(Dictionary<IGate, int> to_num) {
+        public List<object[]> ExportJoins(Dictionary<IGate, int> to_num)
+        {
             List<object[]> res = new();
-            foreach (var joins in joins_out) foreach (var join in joins) {
-                Distantor a = join.A, b = join.B;
-                res.Add(new object[] {
+            foreach (var joins in joins_out) foreach (var join in joins)
+                {
+                    Distantor a = join.A, b = join.B;
+                    res.Add(new object[] {
                     to_num[a.parent], a.num, a.tag,
                     to_num[b.parent], b.num, b.tag,
                 });
-            }
+                }
             return res;
         }
 
-        public void Import(Dictionary<string, object> dict) {
+        public void Import(Dictionary<string, object> dict)
+        {
             double new_b_size = base_size;
             Point new_pos = GetPos();
             Size new_size = GetSize();
-            foreach (var item in dict) {
+            foreach (var item in dict)
+            {
                 object value = item.Value;
-                switch (item.Key) {
-                case "id":
-                    if (value is int @id) {
-                        if (@id != TypeId) throw new ArgumentException("ВНИМАНИЕ! Пришёл не верный id: " + @id + " Ожидалось: " + TypeId);
-                    } else Log.Write("Неверный тип id-записи элемента: " + value);
-                    break;
-                case "pos":
-                    if (value is Point @pos) new_pos = @pos;
-                    else Log.Write("Неверный тип pos-записи элемента: " + value);
-                    break;
-                case "base_size":
-                    double? b_size = value.ToDouble();
-                    if (b_size != null) new_b_size = (double) b_size;
-                    else Log.Write("Неверный тип base_size-записи элемента: " + value);
-                    break;
-                case "size":
-                    if (value is Size @size) new_size = @size;
-                    else Log.Write("Неверный тип size-записи элемента: " + value);
-                    break;
-                default:
-                    ExtraImport(item.Key, value);
-                    break;
+                switch (item.Key)
+                {
+                    case "id":
+                        if (value is int @id)
+                        {
+                            if (@id != TypeId) throw new ArgumentException("ВНИМАНИЕ! Пришёл не верный id: " + @id + " Ожидалось: " + TypeId);
+                        }
+                        else Log.Write("Неверный тип id-записи элемента: " + value);
+                        break;
+                    case "pos":
+                        if (value is Point @pos) new_pos = @pos;
+                        else Log.Write("Неверный тип pos-записи элемента: " + value);
+                        break;
+                    case "base_size":
+                        double? b_size = value.ToDouble();
+                        if (b_size != null) new_b_size = (double)b_size;
+                        else Log.Write("Неверный тип base_size-записи элемента: " + value);
+                        break;
+                    case "size":
+                        if (value is Size @size) new_size = @size;
+                        else Log.Write("Неверный тип size-записи элемента: " + value);
+                        break;
+                    default:
+                        ExtraImport(item.Key, value);
+                        break;
                 }
             }
             base_size = new_b_size;
             Resize(new_size, true);
             Move(new_pos);
         }
-        public virtual void ExtraImport(string key, object extra) {
+        public virtual void ExtraImport(string key, object extra)
+        {
             Log.Write(key + "-запись элемента не поддерживается");
         }
 

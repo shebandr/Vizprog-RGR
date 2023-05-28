@@ -1,13 +1,15 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Vizprog_RGR.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Vizprog_RGR.ViewModels;
 
-namespace Vizprog_RGR.Views.Shapes {
-    public partial class LightBulb: GateBase, IGate, INotifyPropertyChanged {
+namespace Vizprog_RGR.Views.Shapes
+{
+    public partial class LightBulb : GateBase, IGate, INotifyPropertyChanged
+    {
         public override int TypeId => 7;
 
         public override UserControl GetSelf() => this;
@@ -27,9 +29,11 @@ namespace Vizprog_RGR.Views.Shapes {
 
         readonly SolidColorBrush ColorA = new(Color.Parse("#00ff00")); // On
         readonly SolidColorBrush ColorB = new(Color.Parse("#1c1c1c")); // Off
-        public void Brain(ref bool[] ins, ref bool[] outs) {
+        public void Brain(ref bool[] ins, ref bool[] outs)
+        {
             var value = state = ins[0];
-            Dispatcher.UIThread.InvokeAsync(() => {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
                 border.Background = value ? ColorA : ColorB;
             });
         }
@@ -48,7 +52,8 @@ namespace Vizprog_RGR.Views.Shapes {
 
         public override Dictionary<string, object> ExtraExport() => new() { ["state"] = state };
 
-        public override void ExtraImport(string key, object extra) {
+        public override void ExtraImport(string key, object extra)
+        {
             if (key != "state") { Log.Write(key + "-запись элемента не поддерживается"); return; }
             if (extra is not bool @st) { Log.Write("Неверный тип state-записи элемента: " + extra); return; }
             state = @st;

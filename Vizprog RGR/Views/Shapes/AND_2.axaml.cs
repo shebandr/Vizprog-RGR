@@ -1,8 +1,10 @@
 using Avalonia.Controls;
 using System.ComponentModel;
 
-namespace Vizprog_RGR.Views.Shapes {
-    public partial class AND_2: GateBase, IGate, INotifyPropertyChanged {
+namespace Vizprog_RGR.Views.Shapes
+{
+    public partial class AND_2 : GateBase, IGate, INotifyPropertyChanged
+    {
         public override int TypeId => 0;
 
         public override UserControl GetSelf() => this;

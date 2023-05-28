@@ -1,9 +1,8 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Vizprog_RGR.ViewModels;
-using Vizprog_RGR.Views;
 using System.IO;
+using Vizprog_RGR.Views;
 
 namespace Vizprog_RGR
 {
@@ -27,7 +26,7 @@ namespace Vizprog_RGR
         {
             if (lock_inc_build) return;
 
-            string path = "../../../../build.num";
+            string path = "../../../build.num";
             int num;
             try { num = int.Parse(File.ReadAllText(path)); }
             catch (FileNotFoundException) { num = 0; }

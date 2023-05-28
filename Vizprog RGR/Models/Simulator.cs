@@ -1,20 +1,23 @@
-﻿using Vizprog_RGR.ViewModels;
-using Vizprog_RGR.Views.Shapes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Vizprog_RGR.ViewModels;
+using Vizprog_RGR.Views.Shapes;
 
-namespace Vizprog_RGR.Models {
-    public class Meta {
+namespace Vizprog_RGR.Models
+{
+    public class Meta
+    {
         public IGate? item;
         public int[] ins;
         public int[] outs;
         public bool[] i_buf;
         public bool[] o_buf;
 
-        public Meta(IGate item, int out_id) {
+        public Meta(IGate item, int out_id)
+        {
             this.item = item;
             ins = Enumerable.Repeat(0, item.CountIns).ToArray();
             outs = Enumerable.Range(out_id, item.CountOuts).ToArray();
@@ -22,34 +25,41 @@ namespace Vizprog_RGR.Models {
             o_buf = Enumerable.Repeat(false, item.CountOuts).ToArray();
         }
 
-        public void Print() {
+        public void Print()
+        {
             Log.Write("Элемент: " + item + " | Ins: " + Utils.Obj2json(ins) + " | Outs: " + Utils.Obj2json(outs));
         }
     }
 
 
-    public class Simulator {
-        public Simulator() {
+    public class Simulator
+    {
+        public Simulator()
+        {
             Start();
         }
 
         private Task? task;
         private bool stop_sim = false;
         public bool lock_sim = false;
-        public void Start() {
+        public void Start()
+        {
             if (task != null || lock_sim) return;
             stop_sim = false;
-            task = Task.Run(async () => {
-                for (; ; ) {
-                    await Task.Delay(1000 / 144); 
-                    
+            task = Task.Run(async () =>
+            {
+                for (; ; )
+                {
+                    await Task.Delay(1000 / 144);
+
                     try { Tick(); } catch (Exception e) { Log.Write("Logical crush: " + e); continue; }
 
                     if (stop_sim) return;
                 }
             });
         }
-        public void Stop() {
+        public void Stop()
+        {
             if (task == null) return;
             stop_sim = true;
             task.GetAwaiter().GetResult();
@@ -63,11 +73,13 @@ namespace Vizprog_RGR.Models {
         readonly List<Meta> items = new();
         readonly Dictionary<IGate, Meta> ids = new();
 
-        public void AddItem(IGate item) {
+        public void AddItem(IGate item)
+        {
             Stop();
 
             int out_id = outs.Count;
-            for (int i = 0; i < item.CountOuts; i++) {
+            for (int i = 0; i < item.CountOuts; i++)
+            {
                 outs.Add(false);
                 outs2.Add(false);
             }
@@ -81,12 +93,14 @@ namespace Vizprog_RGR.Models {
 
         }
 
-        public void RemoveItem(IGate item) {
+        public void RemoveItem(IGate item)
+        {
             Stop();
 
             Meta meta = ids[item];
             meta.item = null;
-            foreach (var i in Enumerable.Range(0, meta.outs.Length)) {
+            foreach (var i in Enumerable.Range(0, meta.outs.Length))
+            {
                 int n = meta.outs[i];
                 outs[n] = outs2[n] = false;
             }
@@ -95,8 +109,10 @@ namespace Vizprog_RGR.Models {
             Start();
         }
 
-        private void Tick() {
-            foreach (var meta in items) {
+        private void Tick()
+        {
+            foreach (var meta in items)
+            {
                 var item = meta.item;
                 if (item == null) continue;
 
@@ -107,46 +123,53 @@ namespace Vizprog_RGR.Models {
 
                 for (int i = 0; i < ib.Length; i++) ib[i] = outs[i_n[i]];
                 item.Brain(ref ib, ref ob);
-                for (int i = 0; i < ob.Length; i++) {
+                for (int i = 0; i < ob.Length; i++)
+                {
                     bool res = ob[i];
                     outs2[o_n[i]] = res;
                     item.SetJoinColor(i, res);
                 }
             }
 
-            (outs2, outs) = (outs, outs2); 
+            (outs2, outs) = (outs, outs2);
 
-            if (comparative_test_mode) {
+            if (comparative_test_mode)
+            {
                 prev_state = cur_state;
                 cur_state = Export();
             }
         }
 
-        public void Clean() {
+        public void Clean()
+        {
             int n = 0;
             int[] arr = Enumerable.Repeat(-1, outs.Count).ToArray();
             StringBuilder sb = new();
             sb.Append('0');
             foreach (var meta in items)
                 if (meta.item != null)
-                    foreach (var @out in meta.outs) {
+                    foreach (var @out in meta.outs)
+                    {
                         arr[@out] = ++n;
                         sb.Append(outs[@out] ? '1' : '0');
                     }
             arr[0] = 0;
-            foreach (var meta in items) {
+            foreach (var meta in items)
+            {
                 meta.outs = meta.outs.Select(x => arr[x]).ToArray();
                 meta.ins = meta.ins.Select(x => arr[x]).ToArray();
             }
             Import(sb.ToString());
         }
         public string Export() => string.Join("", outs.Select(x => x ? '1' : '0'));
-        public void Import(string state) {
+        public void Import(string state)
+        {
             if (state.Length == 0) state = "0";
             outs = state.Select(x => x == '1').ToList();
             outs2 = outs.ToList(); // clone
         }
-        public void Clear() {
+        public void Clear()
+        {
             outs = new() { false };
             outs2 = new() { false };
             items.Clear();
@@ -170,9 +193,11 @@ namespace Vizprog_RGR.Models {
         private string prev_state = "0";
         private string cur_state = "0";
 
-        public bool ComparativeTestMode {
+        public bool ComparativeTestMode
+        {
             get => comparative_test_mode;
-            set {
+            set
+            {
                 comparative_test_mode = value;
                 if (value) prev_state = cur_state = Export();
             }

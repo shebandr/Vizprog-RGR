@@ -1,21 +1,25 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Vizprog_RGR.ViewModels;
 
 namespace Vizprog_RGR.Views
 {
     public partial class MainWindow : Window
     {
-        readonly MainWindowViewModel MWVM;
+        readonly MainWindowViewModel mwvm;
+
         public MainWindow()
         {
             InitializeComponent();
-            MWVM = new MainWindowViewModel();
-            DataContext = MWVM;
-            MWVM.AddWindow(this);
+            mwvm = new MainWindowViewModel();
+            DataContext = mwvm;
+            mwvm.AddWindow(this);
         }
 
-        public void Update() => MWVM.Update();
-    }
+        public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            mwvm.DTapped(sender, e);
+        }
 
+        public void Update() => mwvm.Update();
+    }
 }

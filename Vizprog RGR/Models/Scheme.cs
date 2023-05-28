@@ -1,11 +1,13 @@
-﻿using Vizprog_RGR.ViewModels;
-using ReactiveUI;
+﻿using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Reactive;
+using Vizprog_RGR.ViewModels;
 
-namespace Vizprog_RGR.Models {
-    public class Scheme : ReactiveObject {
+namespace Vizprog_RGR.Models
+{
+    public class Scheme : ReactiveObject
+    {
         public string Name { get; set; }
         public long Created;
         public long Modified;
@@ -16,7 +18,8 @@ namespace Vizprog_RGR.Models {
 
         private readonly Project parent;
 
-        public Scheme(Project p) { // Новая схема
+        public Scheme(Project p)
+        { // Новая схема
             Created = Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             Name = "Newy";
             items = joins = Array.Empty<object>();
@@ -28,7 +31,8 @@ namespace Vizprog_RGR.Models {
             Delete = ReactiveCommand.Create<Unit, Unit>(_ => { FuncDelete(); return new Unit(); });
         }
 
-        public Scheme(Project p, object data) { // Импорт
+        public Scheme(Project p, object data)
+        { // Импорт
             parent = p;
 
             if (data is not Dictionary<string, object> dict) throw new Exception("Ожидался словарь в корне схемы");
@@ -62,7 +66,8 @@ namespace Vizprog_RGR.Models {
             Delete = ReactiveCommand.Create<Unit, Unit>(_ => { FuncDelete(); return new Unit(); });
         }
 
-        public void Update(object[] items, object[] joins, string states) {
+        public void Update(object[] items, object[] joins, string states)
+        {
             this.items = items;
             this.joins = joins;
             this.states = states;
@@ -72,8 +77,10 @@ namespace Vizprog_RGR.Models {
 
 
 
-        public object Export() {
-            return new Dictionary<string, object> {
+        public object Export()
+        {
+            return new Dictionary<string, object>
+            {
                 ["name"] = Name,
                 ["created"] = Created,
                 ["modified"] = Modified,
@@ -82,7 +89,8 @@ namespace Vizprog_RGR.Models {
                 ["states"] = states,
             };
         }
-        public void Update() {
+        public void Update()
+        {
             Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             parent.Modified = Modified;
             parent.Save();
@@ -90,7 +98,8 @@ namespace Vizprog_RGR.Models {
 
         public override string ToString() => Name;
 
-        internal void ChangeName(string name) {
+        internal void ChangeName(string name)
+        {
             Name = name;
             Update();
         }
@@ -99,16 +108,19 @@ namespace Vizprog_RGR.Models {
          * Кнопочки
          */
 
-        void FuncOpen() {
+        void FuncOpen()
+        {
             ViewModelBase.map.current_scheme = this;
             ViewModelBase.map.ImportScheme();
             parent.UpdateList();
         }
-        void FuncNewItem() {
+        void FuncNewItem()
+        {
             parent.AddScheme(this);
             parent.UpdateList();
         }
-        void FuncDelete() {
+        void FuncDelete()
+        {
             parent.RemoveScheme(this);
             parent.UpdateList();
         }
@@ -120,7 +132,8 @@ namespace Vizprog_RGR.Models {
         public bool CanUseSchemeDeleter { get => parent.schemes.Count > 1; }
         public bool CanOpenMe { get => ViewModelBase.map.current_scheme != this; }
 
-        public void UpdateProps() {
+        public void UpdateProps()
+        {
             this.RaisePropertyChanged(nameof(CanUseSchemeDeleter));
             this.RaisePropertyChanged(nameof(CanOpenMe));
         }

@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Vizprog_RGR.Models {
-    public class Project: IComparable {
+namespace Vizprog_RGR.Models
+{
+    public class Project : IComparable
+    {
         public string Name { get; private set; }
         public long Created;
         public long Modified;
@@ -16,22 +18,24 @@ namespace Vizprog_RGR.Models {
 
         private readonly FileHandler parent;
 
-        public Project(FileHandler parent) { // Новый проект
+        public Project(FileHandler parent)
+        { // Новый проект
             this.parent = parent;
             Name = "Новый проект";
             Created = Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             FileDir = null;
-            FileName = null; 
+            FileName = null;
             CreateScheme();
         }
 
-        public Project(FileHandler parent, string dir, string fileName, object data) { // Импорт
+        public Project(FileHandler parent, string dir, string fileName, object data)
+        { // Импорт
             this.parent = parent;
             FileDir = dir;
             FileName = fileName;
 
             if (data is not Dictionary<string, object> dict) throw new Exception("Ожидался словарь в корне проекта");
-            
+
             if (!dict.TryGetValue("name", out var value)) throw new Exception("В проекте нет имени");
             if (value is not string name) throw new Exception("Тип имени проекта - не строка");
             Name = name;
@@ -46,7 +50,8 @@ namespace Vizprog_RGR.Models {
 
             if (!dict.TryGetValue("schemes", out var value4)) throw new Exception("В проекте нет списка схем");
             if (value4 is not List<object> arr) throw new Exception("Списко схем проекта - не массив строк");
-            foreach (var s_data in arr) {
+            foreach (var s_data in arr)
+            {
                 if (s_data == null) throw new Exception("Одно из файловых имёт списка схем проекта - null");
                 var scheme = new Scheme(this, s_data);
                 schemes.Add(scheme);
@@ -55,24 +60,28 @@ namespace Vizprog_RGR.Models {
 
 
 
-        public Scheme CreateScheme() {
+        public Scheme CreateScheme()
+        {
             var scheme = new Scheme(this);
             schemes.Add(scheme);
             Save();
             return scheme;
         }
-        public Scheme AddScheme(Scheme? prev) {
+        public Scheme AddScheme(Scheme? prev)
+        {
             var scheme = new Scheme(this);
             int pos = prev == null ? 0 : schemes.IndexOf(prev) + 1;
             schemes.Insert(pos, scheme);
             Save();
             return scheme;
         }
-        public void RemoveScheme(Scheme me) {
+        public void RemoveScheme(Scheme me)
+        {
             schemes.Remove(me);
             Save();
         }
-        public void UpdateList() {
+        public void UpdateList()
+        {
             foreach (var scheme in schemes) scheme.UpdateProps();
         }
 
@@ -80,8 +89,10 @@ namespace Vizprog_RGR.Models {
 
 
 
-        public object Export() {
-            return new Dictionary<string, object> {
+        public object Export()
+        {
+            return new Dictionary<string, object>
+            {
                 ["name"] = Name,
                 ["created"] = Created,
                 ["modified"] = Modified,
@@ -91,23 +102,27 @@ namespace Vizprog_RGR.Models {
 
         public void Save() => FileHandler.SaveProject(this);
 
-        public int CompareTo(object? obj) {
+        public int CompareTo(object? obj)
+        {
             if (obj is not Project proj) throw new ArgumentNullException(nameof(obj));
-            return (int)(proj.Modified - Modified); 
+            return (int)(proj.Modified - Modified);
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return Name + "\nИзменён: " + Modified.UnixTimeStampToString() + "\nСоздан: " + Created.UnixTimeStampToString();
         }
 
-        internal void ChangeName(string name) {
+        internal void ChangeName(string name)
+        {
             Name = name;
             Modified = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             Save();
         }
 
         public bool CanSave() => FileDir != null;
-        public void SaveAs(Window mw) {
+        public void SaveAs(Window mw)
+        {
             FileDir = FileHandler.RequestProjectPath(mw);
             Save();
             parent.AppendProject(this);

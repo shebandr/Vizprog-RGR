@@ -2,11 +2,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Media;
-using Vizprog_RGR.Models;
 using System.ComponentModel;
+using Vizprog_RGR.Models;
 
-namespace Vizprog_RGR.Views.Shapes {
-    public partial class Button: GateBase, IGate, INotifyPropertyChanged {
+namespace Vizprog_RGR.Views.Shapes
+{
+    public partial class Button : GateBase, IGate, INotifyPropertyChanged
+    {
         public override int TypeId => 6;
 
         public override UserControl GetSelf() => this;
@@ -32,12 +34,14 @@ namespace Vizprog_RGR.Views.Shapes {
 
         bool my_state = false;
 
-        private void Press(object? sender, PointerPressedEventArgs e) {
+        private void Press(object? sender, PointerPressedEventArgs e)
+        {
             if (e.Source is not Ellipse button) return;
             my_state = true;
             button.Fill = new SolidColorBrush(Color.Parse("#7d1414"));
         }
-        private void Release(object? sender, PointerReleasedEventArgs e) {
+        private void Release(object? sender, PointerReleasedEventArgs e)
+        {
             if (e.Source is not Ellipse button) return;
             my_state = false;
             button.Fill = new SolidColorBrush(Color.Parse("#d32f2e"));

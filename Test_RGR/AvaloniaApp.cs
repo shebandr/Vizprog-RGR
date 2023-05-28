@@ -1,9 +1,9 @@
-﻿using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
-using Avalonia;
+﻿using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
-using Vizprog_RGR.Views;
+using Avalonia.Threading;
 using Vizprog_RGR;
+using Vizprog_RGR.Views;
 
 
 namespace Test_RGR

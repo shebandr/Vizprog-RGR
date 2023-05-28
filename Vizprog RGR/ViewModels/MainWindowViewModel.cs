@@ -1,14 +1,14 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
-using Vizprog_RGR.Models;
-using Vizprog_RGR.Views;
-using Vizprog_RGR.Views.Shapes;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive;
+using Vizprog_RGR.Models;
+using Vizprog_RGR.Views;
+using Vizprog_RGR.Views.Shapes;
 
 
 namespace Vizprog_RGR.ViewModels
@@ -68,13 +68,16 @@ namespace Vizprog_RGR.ViewModels
             var panel = (Panel?)canv.Parent;
             if (panel == null) return;
 
-            panel.PointerPressed += (object? sender, PointerPressedEventArgs e) => {
+            panel.PointerPressed += (object? sender, PointerPressedEventArgs e) =>
+            {
                 if (e.Source != null && e.Source is Control @control) map.Press(@control, e.GetCurrentPoint(canv).Position);
             };
-            panel.PointerMoved += (object? sender, PointerEventArgs e) => {
+            panel.PointerMoved += (object? sender, PointerEventArgs e) =>
+            {
                 if (e.Source != null && e.Source is Control @control) map.Move(@control, e.GetCurrentPoint(canv).Position);
             };
-            panel.PointerReleased += (object? sender, PointerReleasedEventArgs e) => {
+            panel.PointerReleased += (object? sender, PointerReleasedEventArgs e) =>
+            {
                 if (e.Source != null && e.Source is Control @control)
                 {
                     int mode = map.Release(@control, e.GetCurrentPoint(canv).Position);
@@ -90,10 +93,12 @@ namespace Vizprog_RGR.ViewModels
                     }
                 }
             };
-            panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) => {
+            panel.PointerWheelChanged += (object? sender, PointerWheelEventArgs e) =>
+            {
                 if (e.Source != null && e.Source is Control @control) map.WheelMove(@control, e.Delta.Y, e.GetCurrentPoint(canv).Position);
             };
-            mw.KeyDown += (object? sender, KeyEventArgs e) => {
+            mw.KeyDown += (object? sender, KeyEventArgs e) =>
+            {
                 if (e.Source != null && e.Source is Control @control) map.KeyPressed(@control, e.Key);
             };
         }
@@ -142,7 +147,8 @@ namespace Vizprog_RGR.ViewModels
             cur_grid.Children[0] = newy;
 
 
-            newy.KeyUp += (object? sender, KeyEventArgs e) => {
+            newy.KeyUp += (object? sender, KeyEventArgs e) =>
+            {
                 if (e.Key != Key.Return) return;
 
                 if (newy.Text != prev_scheme_name)

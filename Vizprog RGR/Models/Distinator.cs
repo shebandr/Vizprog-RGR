@@ -12,7 +12,7 @@ namespace Vizprog_RGR.Models
         public Distantor(IGate parent, int n, string tag)
         {
             this.parent = parent;
-            num = n; 
+            num = n;
             this.tag = tag;
         }
 
