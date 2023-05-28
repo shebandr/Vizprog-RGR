@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Vizprog_RGR.ViewModels;
+using System.IO;
 using Vizprog_RGR.Views;
 
 namespace Vizprog_RGR
@@ -16,14 +16,28 @@ namespace Vizprog_RGR
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = new MainWindowViewModel(),
-                };
-            }
+                desktop.MainWindow = new StartWindow();
 
             base.OnFrameworkInitializationCompleted();
+            IncrementBuildNum();
         }
+
+        private static void IncrementBuildNum()
+        {
+            if (lock_inc_build) return;
+
+            string path = "../../../build.num";
+            int num;
+            try { num = int.Parse(File.ReadAllText(path)); }
+            catch (FileNotFoundException) { num = 0; }
+            num++;
+            File.WriteAllText(path, num.ToString());
+        }
+
+        /*
+         * Для тестирования
+         */
+
+        public static bool lock_inc_build = false;
     }
 }

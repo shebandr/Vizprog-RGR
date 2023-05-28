@@ -1,19 +1,24 @@
 using Avalonia.Controls;
-namespace Vizprog_RGR.Views;
 using Vizprog_RGR.ViewModels;
 
+namespace Vizprog_RGR.Views
+{
     public partial class StartWindow : Window
     {
-    readonly StartWindowViewModel lwvm;
-        public StartWindow() {
+        readonly StartWindowViewModel swvm;
+
+        public StartWindow()
+        {
             InitializeComponent();
-            lwvm = new StartWindowViewModel();
-            DataContext = lwvm;
-            lwvm.AddWindow(this);
+            swvm = new StartWindowViewModel();
+            DataContext = swvm;
+            swvm.AddWindow(this);
         }
 
-        public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
-            lwvm.DTapped(sender, e);
+        public void DTapped(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            swvm.DTapped(sender, e);
         }
     }
-
+}
+//ZRADA V DUPI PECHE
