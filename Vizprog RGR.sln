@@ -5,7 +5,14 @@ VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vizprog RGR", "Vizprog RGR\Vizprog RGR.csproj", "{BB5D6D2A-03FD-488B-B0F7-168611D8BEBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test_RGR", "Test_RGR\Test_RGR.csproj", "{DD381324-D6FB-42FC-AA89-463CE7A1F6EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test_RGR", "Test_RGR\Test_RGR.csproj", "{DD381324-D6FB-42FC-AA89-463CE7A1F6EC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6756027A-E1C0-49A4-BF19-4EF4DC6FCF96}"
+	ProjectSection(SolutionItems) = preProject
+		ER_SuM.png = ER_SuM.png
+		UIScheme.pdf = UIScheme.pdf
+		UseCase.png = UseCase.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
