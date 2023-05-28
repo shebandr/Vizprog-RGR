@@ -65,15 +65,16 @@ namespace Vizprog_RGR.Models
                 1 => new OR_2(),
                 2 => new NOT(),
                 3 => new XOR_2(),
-                5 => new Switch(),
-                6 => new Button(),
-                7 => new LightBulb(),
-                8 => new NAND_2(),
-                9 => new AND_2(),
+                4 => new Switch(),
+                5 => new Button(),
+                6 => new LightBulb(),
+                7 => new NAND_2(),
+                8 => new AND_2(),
+                9 => new Mul(),
             };
         }
 
-        public IGate[] item_types = Enumerable.Range(0, 12).Select(CreateItem).ToArray();
+        public IGate[] item_types = Enumerable.Range(0, 9).Select(CreateItem).ToArray();
 
         public IGate GenSelectedItem() => CreateItem(selected_item);
 
